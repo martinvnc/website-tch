@@ -139,7 +139,8 @@ export default function ContactPage() {
 
                   <div>
                     <label className="block text-sm font-bold text-green-900 mb-1">Message</label>
-                    <textarea name="message" required rows={5} className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 transition-colors resize-none" />
+                    <textarea name="message" required rows={5} minLength={20} maxLength={2000} className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 transition-colors resize-none" />
+                    <p className="text-xs text-muted-foreground mt-1">20 caractères minimum, 2000 maximum</p>
                   </div>
 
                   <p className="text-xs text-muted-foreground">

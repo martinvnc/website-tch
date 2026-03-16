@@ -33,6 +33,14 @@ export async function submitContactForm(
     return { error: "Tous les champs obligatoires doivent être remplis." };
   }
 
+  // Message length validation
+  if (message.length < 20) {
+    return { error: "Le message doit contenir au moins 20 caractères." };
+  }
+  if (message.length > 2000) {
+    return { error: "Le message ne peut pas dépasser 2000 caractères." };
+  }
+
   // Basic email format check
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { error: "Adresse email invalide." };

@@ -177,7 +177,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
             {/* Photo de groupe */}
             <div className="mt-8 reveal d1 relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-lg max-w-4xl mx-auto">
               <Image
-                src="/assets/photos/comite/COMITE.JPG"
+                src="/assets/photos/comite/comite.jpg"
                 alt="Comité directeur du TCH"
                 fill
                 className="object-cover"

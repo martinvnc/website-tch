@@ -460,29 +460,35 @@ ON CONFLICT DO NOTHING;
 
 -- News
 INSERT INTO news (titre, categorie, image_url, texte, cta_label, cta_url) VALUES
-  ('Soirée Fluo au TCH — Une nuit inoubliable !', 'soiree', '/assets/photos/soiree-fluo/IMG_3162.JPEG', 'Une soirée magique sous les lumières fluo avec tous les membres du club. Ambiance garantie !', 'Voir toutes les photos', NULL),
-  ('Stage vacances jeunes — Les petits champions en action !', 'stage', '/assets/photos/stage-vacances/IMG_3585.JPEG', 'Nos jeunes talents ont brillé pendant le stage de vacances. Prochaine session bientôt !', 'Inscription au prochain stage', '/contact')
+  ('Soirée Fluo au TCH — Une nuit inoubliable !', 'soiree', '/assets/photos/soiree-fluo/img_3162.jpg', 'Une soirée magique sous les lumières fluo avec tous les membres du club. Ambiance garantie !', 'Voir toutes les photos', NULL),
+  ('Stage vacances jeunes — Les petits champions en action !', 'stage', '/assets/photos/stage-vacances/img_3585.jpg', 'Nos jeunes talents ont brillé pendant le stage de vacances. Prochaine session bientôt !', 'Inscription au prochain stage', '/contact')
 ON CONFLICT DO NOTHING;
 
 -- Résultats
-INSERT INTO resultats (type, equipe_tch, equipe_adversaire, score_tch, score_adv, resultat, date, competition) VALUES
-  ('Interclub', 'TCH 1', 'Lille UC', 4, 2, 'win', '2026-02-15', 'Interclub Div.2'),
-  ('Tournoi interne', 'M. Dupont', 'P. Martin', 6, 3, 'win', '2026-02-10', 'Tournoi interne Simple'),
-  ('Interclub', 'TCH 2', 'Roubaix TC', 3, 3, 'draw', '2026-02-08', 'Interclub Div.3'),
-  ('Match amical', 'Dupont/Leroy', 'Équipe adverse', 2, 4, 'loss', '2026-01-28', 'Match amical Double'),
-  ('Interclub', 'TCH Vét.', 'Tourcoing TC', 5, 1, 'win', '2026-01-20', 'Vétérans Div.1'),
-  ('Tournoi', 'A. Moreau', 'T. Girard', 6, 4, 'win', '2026-01-15', 'Tournoi U14')
+INSERT INTO resultats (type, equipe_tch, equipe_adversaire, score_tch, score_adv, resultat, date, competition, image_url) VALUES
+  ('Interclub', 'TCH 1', 'Lille UC', 4, 2, 'win', '2026-02-15', 'Interclub Div.2', '/assets/photos/resultats/resultat-victoire-interclub.jpg'),
+  ('Tournoi interne', 'M. Dupont', 'P. Martin', 6, 3, 'win', '2026-02-10', 'Tournoi interne Simple', '/assets/photos/resultats/resultat-victoire-tournoi.jpg'),
+  ('Interclub', 'TCH 2', 'Roubaix TC', 3, 3, 'draw', '2026-02-08', 'Interclub Div.3', '/assets/photos/resultats/resultat-nul.jpg'),
+  ('Match amical', 'Dupont/Leroy', 'Équipe adverse', 2, 4, 'loss', '2026-01-28', 'Match amical Double', '/assets/photos/resultats/resultat-defaite.jpg'),
+  ('Interclub', 'TCH Vét.', 'Tourcoing TC', 5, 1, 'win', '2026-01-20', 'Vétérans Div.1', '/assets/photos/resultats/resultat-victoire-veterans.jpg'),
+  ('Tournoi', 'A. Moreau', 'T. Girard', 6, 4, 'win', '2026-01-15', 'Tournoi U14', '/assets/photos/resultats/resultat-victoire-jeunes.jpg')
 ON CONFLICT DO NOTHING;
 
 -- Timeline
 INSERT INTO timeline_items (annee, titre, description, ordre) VALUES
-  (1927, 'Fondation du club', 'Le Tennis Club Halluin voit le jour.', 1),
-  (1955, 'Premier tournoi officiel', 'Le TCH organise son premier tournoi homologué.', 2),
-  (1978, 'Construction des courts couverts', 'Trois courts indoor viennent compléter les installations.', 3),
-  (1995, 'Rénovation complète', '6 terrains, éclairage nocturne, clubhouse modernisé.', 4),
-  (2010, 'Label École de Tennis FFT', 'Le TCH obtient le label qualité de la FFT.', 5),
-  (2024, 'Rénovation courts extérieurs', 'Béton poreux, éclairage LED, confort optimal.', 6),
-  (2026, 'Lancement du nouveau site web', 'Réservation en ligne et gestion digitale du club.', 7)
+  (1927, 'Fondation du club', 'Création du club privé et inauguration du 1er court en terre battue (route de Linselles).', 1),
+  (1950, '2ème court en terre battue', 'Construction d''un second court en terre battue.', 2),
+  (1960, 'Ouverture à tous & 1er championnat', 'Ouverture du club à tous les pratiquants au tarif de 1000 anciens francs. Organisation du 1er championnat.', 3),
+  (1962, 'Adhésion à la FFT', '50 adhérents et affiliation à la Fédération Française de Tennis.', 4),
+  (1964, '80 adhérents', '80 adhérents dont 30 féminines.', 5),
+  (1967, '1er tournoi de Pentecôte', 'La Mairie devient propriétaire des terrains. Début d''une tradition annuelle toujours vivante.', 6),
+  (1971, 'Éclairage extérieur', '1er club de la vallée de la Lys équipé d''un remarquable éclairage extérieur.', 7),
+  (1981, 'Courts en béton poreux', 'Construction de 3 courts en béton poreux rue de la Lys.', 8),
+  (1985, 'Courts couverts', 'Construction de 2 courts couverts.', 9),
+  (1992, '3ème court couvert & club house', 'Construction d''un 3ème court couvert et agrandissement du club house.', 10),
+  (2010, 'Réservation en ligne', 'Mise en place d''un système de réservation via Internet.', 11),
+  (2018, 'Éclairage LED', 'Changement du système d''éclairage pour des LEDs.', 12),
+  (2026, 'Nouveau site web', 'Lancement de la nouvelle plateforme numérique du TCH.', 13)
 ON CONFLICT DO NOTHING;
 
 -- Comité

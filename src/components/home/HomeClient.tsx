@@ -100,7 +100,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40">
           <div className="max-w-2xl">
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-tight">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
               Tennis Club
               <br />
               <span className="text-yellow-400">Halluin</span>
@@ -113,7 +113,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 href="/reservation"
-                className="px-6 py-3 rounded-lg font-bold bg-yellow-400 text-green-900 hover:bg-yellow-300 btn-primary transition-colors"
+                className="px-6 py-3 rounded-lg font-extrabold bg-yellow-400 text-green-900 hover:bg-yellow-300 btn-primary transition-colors"
               >
                 Réserver un terrain
               </Link>
@@ -123,6 +123,24 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
               >
                 Découvrir le club
               </Link>
+            </div>
+
+            {/* Stat chips */}
+            <div className="mt-10 flex flex-wrap gap-3">
+              {[
+                { value: "97 ans", label: "Années d'histoire" },
+                { value: "273", label: "Licenciés" },
+                { value: "6", label: "Terrains" },
+                { value: "14", label: "Événements / an" },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  className={`reveal d${i + 1} bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2.5`}
+                >
+                  <span className="text-lg font-extrabold text-yellow-400">{stat.value}</span>
+                  <span className="ml-2 text-xs text-white/70">{stat.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -349,7 +367,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
               href="/contact"
-              className="px-6 py-3 rounded-lg font-bold bg-yellow-400 text-green-900 hover:bg-yellow-300 btn-primary transition-colors"
+              className="px-6 py-3 rounded-lg font-extrabold bg-yellow-400 text-green-900 hover:bg-yellow-300 btn-primary transition-colors"
             >
               Nous contacter
             </Link>
