@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useReveal } from "@/hooks/useReveal";
 import { createClient } from "@/lib/supabase/client";
+import { createReservation } from "@/lib/actions/reservation";
 import { ChevronLeft, ChevronRight, Loader2, Lock, X, Search, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -130,74 +131,19 @@ export function ReservationClient({ terrains, isAuthenticated }: Props) {
     setBooking(true);
     setBookingResult(null);
 
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setBookingResult({ error: "Vous devez être connecté." });
-      setBooking(false);
-      return;
-    }
+    // Use server action for secure server-side validation (quota, adhesion, conflicts)
+    const formData = new FormData();
+    formData.set("terrainId", selectedTerrain);
+    formData.set("date", modalDate);
+    formData.set("heureDebut", modalHeure);
+    formData.set("partenaireId", selectedPartner.id);
 
-    // Check user quota
-    const { count: userCount } = await supabase
-      .from("reservations")
-      .select("*", { count: "exact", head: true })
-      .or(`user_id.eq.${user.id},partenaire_user_id.eq.${user.id}`)
-      .eq("date", modalDate)
-      .eq("statut", "confirmed");
+    const result = await createReservation({ error: undefined, success: undefined }, formData);
 
-    if (userCount && userCount > 0) {
-      setBookingResult({ error: "Vous avez déjà une réservation ce jour (limite : 1/jour)." });
-      setBooking(false);
-      return;
-    }
-
-    // Check partner quota
-    const { count: partnerCount } = await supabase
-      .from("reservations")
-      .select("*", { count: "exact", head: true })
-      .or(`user_id.eq.${selectedPartner.id},partenaire_user_id.eq.${selectedPartner.id}`)
-      .eq("date", modalDate)
-      .eq("statut", "confirmed");
-
-    if (partnerCount && partnerCount > 0) {
-      setBookingResult({ error: "Votre partenaire a déjà une réservation ce jour." });
-      setBooking(false);
-      return;
-    }
-
-    // Check slot still free
-    const { count: slotCount } = await supabase
-      .from("reservations")
-      .select("*", { count: "exact", head: true })
-      .eq("terrain_id", selectedTerrain)
-      .eq("date", modalDate)
-      .eq("heure_debut", modalHeure + ":00")
-      .eq("statut", "confirmed");
-
-    if (slotCount && slotCount > 0) {
-      setBookingResult({ error: "Ce créneau vient d'être réservé." });
-      setBooking(false);
-      return;
-    }
-
-    const startHour = parseInt(modalHeure.split(":")[0]);
-    const heureFin = `${(startHour + 1).toString().padStart(2, "0")}:00:00`;
-
-    const { error } = await supabase.from("reservations").insert({
-      terrain_id: selectedTerrain,
-      user_id: user.id,
-      partenaire_user_id: selectedPartner.id,
-      date: modalDate,
-      heure_debut: modalHeure + ":00",
-      heure_fin: heureFin,
-      statut: "confirmed",
-    });
-
-    if (error) {
-      setBookingResult({ error: "Erreur lors de la réservation." });
+    if (result.error) {
+      setBookingResult({ error: result.error });
     } else {
-      setBookingResult({ success: "Terrain réservé !" });
+      setBookingResult({ success: result.success ?? "Terrain réservé !" });
       fetchReservations();
     }
     setBooking(false);

@@ -47,7 +47,7 @@ type RecentReservation = {
 type NewsItem = {
   id: string;
   titre: string;
-  contenu: string | null;
+  texte: string | null;
   categorie: string;
   published: boolean;
   date_publication: string;
@@ -106,7 +106,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
   // News creation
   const [showNewsForm, setShowNewsForm] = useState(false);
-  const [newsForm, setNewsForm] = useState({ titre: "", contenu: "", categorie: "info" });
+  const [newsForm, setNewsForm] = useState({ titre: "", texte: "", categorie: "info" });
   const [creatingNews, setCreatingNews] = useState(false);
   const [togglingNews, setTogglingNews] = useState<string | null>(null);
   const [deletingNews, setDeletingNews] = useState<string | null>(null);
@@ -170,16 +170,16 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       .from("news")
       .insert({
         titre: newsForm.titre.trim(),
-        contenu: newsForm.contenu.trim() || null,
+        texte: newsForm.texte.trim() || null,
         categorie: newsForm.categorie,
         published: false,
-        date_publication: new Date().toISOString(),
+        date_publication: new Date().toISOString().split("T")[0],
       })
       .select()
       .single();
     if (!error && data) {
       setNews((prev) => [data, ...prev]);
-      setNewsForm({ titre: "", contenu: "", categorie: "info" });
+      setNewsForm({ titre: "", texte: "", categorie: "info" });
       setShowNewsForm(false);
     }
     setCreatingNews(false);
@@ -211,7 +211,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     <>
       <section className="bg-green-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-extrabold">Administration</h1>
+          <h1 className="text-2xl font-bold">Administration</h1>
           <p className="text-sm text-white/70 mt-1">Tableau de bord du Tennis Club Halluin</p>
         </div>
       </section>
@@ -246,7 +246,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                     <div className="flex items-center justify-between mb-2">
                       <span className={`${kpi.color}`}>{kpi.icon}</span>
                     </div>
-                    <p className={`text-3xl font-extrabold ${kpi.color}`}>{kpi.value}</p>
+                    <p className={`text-3xl font-bold ${kpi.color}`}>{kpi.value}</p>
                     <p className="text-xs font-bold text-muted-foreground mt-1">{kpi.label}</p>
                   </div>
                 ))}
@@ -487,8 +487,8 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                   <div>
                     <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Contenu</label>
                     <textarea
-                      value={newsForm.contenu}
-                      onChange={(e) => setNewsForm({ ...newsForm, contenu: e.target.value })}
+                      value={newsForm.texte}
+                      onChange={(e) => setNewsForm({ ...newsForm, texte: e.target.value })}
                       placeholder="Contenu de l'actualité..."
                       rows={4}
                       className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm resize-none"

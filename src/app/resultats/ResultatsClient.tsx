@@ -110,7 +110,7 @@ export function ResultatsClient({ resultats }: { resultats: Resultat[] }) {
               { label: "Défaites", count: resultats.filter((r) => r.resultat === "loss").length, color: "text-red-500" },
             ].map((s) => (
               <div key={s.label} className="bg-white rounded-xl p-4 text-center shadow-sm">
-                <p className={`text-2xl font-extrabold ${s.color}`}>{s.count}</p>
+                <p className={`text-2xl font-bold ${s.color}`}>{s.count}</p>
                 <p className="text-xs text-muted-foreground font-bold">{s.label}</p>
               </div>
             ))}
@@ -153,11 +153,11 @@ export function ResultatsClient({ resultats }: { resultats: Resultat[] }) {
                     </p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <span className="text-3xl font-extrabold text-green-900">
+                    <span className="text-3xl font-bold text-green-900">
                       {r.score_tch}
                     </span>
                     <span className="mx-1 text-lg text-muted-foreground">-</span>
-                    <span className="text-3xl font-extrabold text-muted-foreground">
+                    <span className="text-3xl font-bold text-muted-foreground">
                       {r.score_adv}
                     </span>
                   </div>

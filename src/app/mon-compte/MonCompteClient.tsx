@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useReveal } from "@/hooks/useReveal";
 import { createClient } from "@/lib/supabase/client";
+import { cancelReservation } from "@/lib/actions/reservation";
 import { User, Calendar, Users, Settings, Loader2, Pencil, Save, X } from "lucide-react";
 
 type Profile = {
@@ -46,7 +47,12 @@ const tabs = [
   { id: "enfants", label: "Mes enfants", icon: <Users size={16} /> },
 ];
 
-const niveaux = ["Débutant", "Intermédiaire", "Avancé", "Compétition"];
+const niveaux = [
+  { value: "debutant", label: "Débutant" },
+  { value: "intermediaire", label: "Intermédiaire" },
+  { value: "confirme", label: "Confirmé" },
+  { value: "competiteur", label: "Compétiteur" },
+];
 
 export function MonCompteClient({ profile: initialProfile, reservations: initialReservations, enfants }: Props) {
   useReveal();
@@ -75,13 +81,11 @@ export function MonCompteClient({ profile: initialProfile, reservations: initial
     if (!confirm("Annuler cette réservation ?")) return;
     setCancellingId(id);
 
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("reservations")
-      .update({ statut: "cancelled", cancelled_at: new Date().toISOString() })
-      .eq("id", id);
+    const result = await cancelReservation(id);
 
-    if (!error) {
+    if (result.error) {
+      alert(result.error);
+    } else {
       setReservations((prev) =>
         prev.map((r) => (r.id === id ? { ...r, statut: "cancelled" } : r))
       );
@@ -141,11 +145,11 @@ export function MonCompteClient({ profile: initialProfile, reservations: initial
       <section className="bg-green-900 text-white py-12">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-xl font-extrabold text-yellow-400">
+            <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold text-yellow-400">
               {profile.prenom?.[0]}{profile.nom?.[0]}
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold">
+              <h1 className="text-2xl font-bold">
                 {profile.prenom} {profile.nom}
               </h1>
               <p className="text-sm text-white/70">{profile.email}</p>
@@ -239,7 +243,7 @@ export function MonCompteClient({ profile: initialProfile, reservations: initial
                         >
                           <option value="">Non renseigné</option>
                           {niveaux.map((n) => (
-                            <option key={n} value={n}>{n}</option>
+                            <option key={n.value} value={n.value}>{n.label}</option>
                           ))}
                         </select>
                       </div>

@@ -38,7 +38,7 @@ export async function signUp(
 
   const serviceClient = createServiceRoleClient();
 
-  const devCode = process.env.NEXT_PUBLIC_DEV_ACCESS_CODE;
+  const devCode = process.env.DEV_ACCESS_CODE;
   let codeValid = false;
 
   if (devCode && codeAcces.toUpperCase() === devCode.toUpperCase()) {
@@ -63,13 +63,9 @@ export async function signUp(
     codeValid = true;
 
     try {
-      const currentCount = codeData.usage_count ?? 0;
-      await serviceClient
-        .from("codes_acces")
-        .update({ usage_count: currentCount + 1 })
-        .eq("id", codeData.id);
+      await serviceClient.rpc("increment_code_usage", { code_id: codeData.id });
     } catch {
-      // silently ignore
+      // silently ignore — non-critical
     }
   }
 

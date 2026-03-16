@@ -24,7 +24,7 @@ export default async function MonComptePage() {
   const { data: reservations } = await supabase
     .from("reservations")
     .select("*, terrains(nom)")
-    .eq("user_id", user.id)
+    .or(`user_id.eq.${user.id},partenaire_user_id.eq.${user.id}`)
     .order("date", { ascending: false })
     .limit(10);
 

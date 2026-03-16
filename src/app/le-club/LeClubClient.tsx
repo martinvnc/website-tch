@@ -71,7 +71,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div className="reveal">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-green-600">
+              <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
                 Notre histoire
               </h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
@@ -101,7 +101,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
       {timeline.length > 0 && (
         <section className="py-16 sm:py-20 bg-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-green-600 text-center reveal">
+            <h2 className="text-3xl sm:text-4xl font-bold text-green-600 text-center reveal">
               Notre parcours
             </h2>
             <div className="mt-10 relative">
@@ -120,7 +120,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
 
                   {/* Content */}
                   <div className={`ml-10 sm:ml-0 sm:w-5/12 ${i % 2 === 0 ? "sm:pr-10 sm:text-right" : "sm:pl-10"}`}>
-                    <span className="text-2xl font-extrabold text-yellow-500">
+                    <span className="text-2xl font-bold text-yellow-500">
                       {item.annee}
                     </span>
                     <h3 className="font-bold text-green-900 mt-1">{item.titre}</h3>
@@ -138,7 +138,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
       {/* TERRAINS */}
       <section className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-green-600 text-center reveal">
+          <h2 className="text-3xl sm:text-4xl font-bold text-green-600 text-center reveal">
             Nos terrains
           </h2>
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -170,7 +170,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
       {comite.length > 0 && (
         <section className="py-16 sm:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-green-600 text-center reveal">
+            <h2 className="text-3xl sm:text-4xl font-bold text-green-600 text-center reveal">
               Le comité directeur
             </h2>
 
@@ -190,7 +190,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
                   key={m.id}
                   className={`reveal d${Math.min(i + 1, 4)} text-center p-4 rounded-xl bg-off-white card-hover`}
                 >
-                  <div className="w-16 h-16 mx-auto rounded-full bg-green-600/10 flex items-center justify-center text-green-600 font-extrabold text-xl">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-green-600/10 flex items-center justify-center text-green-600 font-bold text-xl">
                     {m.prenom[0]}{m.nom[0]}
                   </div>
                   <h3 className="mt-3 font-bold text-green-900 text-sm">
@@ -208,7 +208,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
       {galerie.length > 0 && (
         <section className="py-16 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-green-600 text-center reveal">
+            <h2 className="text-3xl sm:text-4xl font-bold text-green-600 text-center reveal">
               Galerie photos
             </h2>
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -239,12 +239,21 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
             </p>
             <div className="flex flex-wrap justify-center items-center gap-8 reveal d1">
               {sponsors.map((s) => (
-                <span
-                  key={s.id}
-                  className="text-sm font-bold text-muted-foreground/60 hover:text-muted-foreground transition-colors px-4 py-2"
-                >
-                  {s.nom}
-                </span>
+                <div key={s.id} className="flex items-center gap-2 px-4 py-2">
+                  {s.logo_url ? (
+                    <Image
+                      src={s.logo_url}
+                      alt={s.nom}
+                      width={80}
+                      height={40}
+                      className="h-8 w-auto object-contain opacity-60 hover:opacity-100 transition-opacity"
+                    />
+                  ) : (
+                    <span className="text-sm font-bold text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+                      {s.nom}
+                    </span>
+                  )}
+                </div>
               ))}
             </div>
           </div>

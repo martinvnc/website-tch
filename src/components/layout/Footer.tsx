@@ -63,7 +63,7 @@ export function Footer() {
 
           {footerLinks.map((section) => (
             <div key={section.title}>
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-yellow-400 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-yellow-400 mb-4">
                 {section.title}
               </h3>
               <ul className="space-y-2">

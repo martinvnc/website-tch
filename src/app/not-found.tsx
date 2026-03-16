@@ -12,7 +12,7 @@ export default function NotFound() {
           height={30}
           className="h-8 w-auto mx-auto mb-6 opacity-40"
         />
-        <h1 className="text-7xl font-extrabold text-green-600">404</h1>
+        <h1 className="text-7xl font-bold text-green-600">404</h1>
         <p className="mt-3 text-lg font-bold text-green-900">
           Page introuvable
         </p>

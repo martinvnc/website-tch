@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS reservations_groupees (
 CREATE TABLE IF NOT EXISTS news (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   titre text NOT NULL,
-  categorie text CHECK (categorie IN ('tournoi','stage','soiree','club')),
+  categorie text CHECK (categorie IN ('tournoi','stage','soiree','club','info','competition','animation','jeunes')),
   date_publication date DEFAULT CURRENT_DATE,
   image_url text,
   texte text,
@@ -306,7 +306,9 @@ ALTER TABLE site_config ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: users can read all, update own
 CREATE POLICY "Profiles are viewable by authenticated" ON profiles FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE TO authenticated
+  USING (auth.uid() = id)
+  WITH CHECK (role = (SELECT role FROM profiles WHERE id = auth.uid()));
 CREATE POLICY "Profiles are insertable via trigger" ON profiles FOR INSERT WITH CHECK (true);
 
 -- Profils enfants: parent can CRUD their own
@@ -514,10 +516,11 @@ INSERT INTO sponsors (nom, ordre) VALUES
   ('Construire59', 6)
 ON CONFLICT DO NOTHING;
 
--- Codes d'accès (dev)
+-- Note: Access codes should be created via admin panel in production
+-- These dev codes are for initial setup only — deactivate before going live
 INSERT INTO codes_acces (code, actif) VALUES
-  ('TCH_TEST_2026', true),
-  ('TCH2026', true)
+  ('TCH_TEST_2026', false),
+  ('TCH2026', false)
 ON CONFLICT DO NOTHING;
 
 -- Config site

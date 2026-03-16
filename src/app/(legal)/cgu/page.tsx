@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 export default function CguPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <h1 className="text-3xl font-extrabold text-green-600 mb-8">Conditions Générales d&apos;Utilisation</h1>
+      <h1 className="text-3xl font-bold text-green-600 mb-8">Conditions Générales d&apos;Utilisation</h1>
       <div className="prose prose-green max-w-none space-y-6 text-sm text-muted-foreground">
         <section>
           <h2 className="text-lg font-bold text-green-900">1. Objet</h2>

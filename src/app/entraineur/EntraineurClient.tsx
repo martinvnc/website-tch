@@ -69,7 +69,7 @@ export function EntraineurClient({ groupes, seances }: Props) {
     <>
       <section className="bg-green-900 text-white py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-extrabold">Espace Entraîneur</h1>
+          <h1 className="text-2xl font-bold">Espace Entraîneur</h1>
           <p className="text-sm text-white/70 mt-1">
             {groupes.length} groupe{groupes.length > 1 ? "s" : ""} · {seances.length} séance{seances.length > 1 ? "s" : ""} à venir
           </p>
@@ -200,7 +200,7 @@ export function EntraineurClient({ groupes, seances }: Props) {
                   { label: "Absents", value: absentCount, color: "text-red-500" },
                 ].map((s) => (
                   <div key={s.label} className="bg-white rounded-xl p-4 text-center shadow-sm">
-                    <p className={`text-2xl font-extrabold ${s.color}`}>{s.value}</p>
+                    <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
                     <p className="text-xs text-muted-foreground font-bold">{s.label}</p>
                   </div>
                 ))}

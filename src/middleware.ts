@@ -45,9 +45,11 @@ export async function middleware(request: NextRequest) {
 
   // Already logged in — redirect away from /connexion
   if (pathname === "/connexion" && user) {
-    const redirect = request.nextUrl.searchParams.get("redirect") || "/mon-compte";
+    const rawRedirect = request.nextUrl.searchParams.get("redirect") || "/mon-compte";
+    // Prevent open redirect: must start with / and not //
+    const safeRedirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/mon-compte";
     const url = request.nextUrl.clone();
-    url.pathname = redirect;
+    url.pathname = safeRedirect;
     url.searchParams.delete("redirect");
     url.searchParams.delete("message");
     return NextResponse.redirect(url);

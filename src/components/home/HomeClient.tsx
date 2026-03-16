@@ -133,7 +133,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
         <section className="py-16 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center reveal">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-green-600">
+              <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
                 Actualités du club
               </h2>
               <p className="mt-2 text-muted-foreground">
@@ -194,7 +194,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
         <section className="py-16 sm:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center reveal">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-green-600">
+              <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
                 Derniers résultats
               </h2>
               <p className="mt-2 text-muted-foreground">
@@ -225,11 +225,11 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         </p>
                       </div>
                       <div className="text-right">
-                        <span className="text-2xl font-extrabold text-green-900">
+                        <span className="text-2xl font-bold text-green-900">
                           {r.score_tch}
                         </span>
                         <span className="mx-1 text-muted-foreground">-</span>
-                        <span className="text-2xl font-extrabold text-muted-foreground">
+                        <span className="text-2xl font-bold text-muted-foreground">
                           {r.score_adv}
                         </span>
                       </div>
@@ -261,7 +261,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       <section className="py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center reveal">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-green-600">
+            <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
               Nos installations
             </h2>
             <p className="mt-2 text-muted-foreground">
@@ -339,7 +339,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* CTA */}
       <section className="py-16 sm:py-20 bg-green-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
-          <h2 className="text-3xl sm:text-4xl font-extrabold">
+          <h2 className="text-3xl sm:text-4xl font-bold">
             Rejoignez le <span className="text-yellow-400">TCH</span>
           </h2>
           <p className="mt-3 text-lg text-white/80 max-w-xl mx-auto">

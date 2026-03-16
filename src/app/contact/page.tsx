@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useReveal } from "@/hooks/useReveal";
 import { MapPin, Phone, Mail, Clock, Send, Loader2, CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { submitContactForm } from "@/lib/actions/contact";
 
 const objets = [
   { value: "information", label: "Demande d'information" },
@@ -27,22 +27,11 @@ export default function ContactPage() {
     setLoading(true);
     setError("");
 
-    const form = new FormData(e.currentTarget);
-    const data = {
-      prenom: form.get("prenom") as string,
-      nom: form.get("nom") as string,
-      email: form.get("email") as string,
-      telephone: form.get("telephone") as string,
-      objet: form.get("objet") as string,
-      message: form.get("message") as string,
-      numero: `TCH-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
-    };
+    const formData = new FormData(e.currentTarget);
+    const result = await submitContactForm({ error: undefined, success: undefined }, formData);
 
-    const supabase = createClient();
-    const { error: dbError } = await supabase.from("contact_tickets").insert(data);
-
-    if (dbError) {
-      setError("Erreur lors de l'envoi. Veuillez réessayer.");
+    if (result.error) {
+      setError(result.error);
       setLoading(false);
       return;
     }
@@ -70,7 +59,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
             {/* Infos contact */}
             <div className="lg:col-span-2 space-y-5 reveal">
-              <h2 className="text-2xl font-extrabold text-green-600">
+              <h2 className="text-2xl font-bold text-green-600">
                 Nos coordonnées
               </h2>
               {[
@@ -106,6 +95,16 @@ export default function ContactPage() {
                   {error && (
                     <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
                   )}
+
+                  {/* Honeypot — hidden from humans, bots will fill it */}
+                  <input
+                    type="text"
+                    name="website"
+                    autoComplete="off"
+                    tabIndex={-1}
+                    className="absolute opacity-0 h-0 w-0 pointer-events-none"
+                    aria-hidden="true"
+                  />
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
