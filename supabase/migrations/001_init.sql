@@ -526,7 +526,8 @@ ON CONFLICT DO NOTHING;
 -- These dev codes are for initial setup only — deactivate before going live
 INSERT INTO codes_acces (code, actif) VALUES
   ('TCH_TEST_2026', false),
-  ('TCH2026', false)
+  ('TCH2026', false),
+  ('2200', true)
 ON CONFLICT DO NOTHING;
 
 -- Config site
