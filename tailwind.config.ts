@@ -11,6 +11,21 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        green: {
+          900: "#1a2e1c",
+          800: "#2d4a30",
+          600: "#4c7650",
+          500: "#639268",
+        },
+        yellow: {
+          DEFAULT: "#f6ca73",
+          400: "#f6ca73",
+        },
+        "off-white": "#f7f5f0",
+      },
+      fontFamily: {
+        sans: ["var(--font-quicksand)", "sans-serif"],
+        display: ["var(--font-dm-serif)", "serif"],
       },
     },
   },
