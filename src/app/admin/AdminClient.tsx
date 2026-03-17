@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Users, Calendar, MessageSquare, Key, Newspaper, BarChart3,
   GraduationCap, Loader2, Plus, X, ChevronDown, Eye, Trash2, ToggleLeft, ToggleRight,
-  Bold, Italic, Underline, Upload, ImageIcon,
+  Bold, Italic, Underline, Upload, ImageIcon, Pencil,
 } from "lucide-react";
 
 type Stats = {
@@ -119,6 +119,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [newsError, setNewsError] = useState<string | null>(null);
   const [togglingNews, setTogglingNews] = useState<string | null>(null);
   const [deletingNews, setDeletingNews] = useState<string | null>(null);
+  const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
 
   // Rich text editor
   const editorRef = useRef<HTMLDivElement>(null);
@@ -331,6 +332,92 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       setNews((prev) => prev.filter((n) => n.id !== id));
     }
     setDeletingNews(null);
+  }
+
+  function startEditNews(item: NewsItem) {
+    setEditingNews(item);
+    setNewsForm({
+      titre: item.titre,
+      categorie: item.categorie,
+      cta_label: item.cta_label || "",
+      cta_url: item.cta_url || "",
+    });
+    if (item.image_url) {
+      setNewsImagePreview(item.image_url);
+      setNewsImageFile(null); // no new file yet
+    } else {
+      removeImage();
+    }
+    setShowNewsForm(true);
+    // Set editor content after render
+    setTimeout(() => {
+      if (editorRef.current) {
+        editorRef.current.innerHTML = item.texte || "";
+      }
+    }, 50);
+  }
+
+  function cancelEdit() {
+    setEditingNews(null);
+    setNewsForm({ titre: "", categorie: "club", cta_label: "", cta_url: "" });
+    if (editorRef.current) editorRef.current.innerHTML = "";
+    removeImage();
+    setShowNewsForm(false);
+  }
+
+  async function updateNewsItem() {
+    if (!editingNews || !newsForm.titre.trim()) return;
+    setCreatingNews(true);
+    setNewsError(null);
+
+    let imageUrl: string | null = editingNews.image_url;
+
+    // Upload new image if a new file was selected
+    if (newsImageFile) {
+      setUploadingImage(true);
+      const ext = newsImageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("news-images")
+        .upload(fileName, newsImageFile, { cacheControl: "3600", upsert: false });
+      if (uploadError) {
+        setNewsError("Erreur upload image : " + uploadError.message);
+        setCreatingNews(false);
+        setUploadingImage(false);
+        return;
+      }
+      const { data: urlData } = supabase.storage.from("news-images").getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
+      setUploadingImage(false);
+    } else if (!newsImagePreview) {
+      // Image was removed
+      imageUrl = null;
+    }
+
+    const htmlContent = editorRef.current?.innerHTML?.trim() || null;
+    const cleanContent = htmlContent === "<br>" || htmlContent === "<div><br></div>" ? null : htmlContent;
+
+    const { data, error } = await supabase
+      .from("news")
+      .update({
+        titre: newsForm.titre.trim(),
+        texte: cleanContent,
+        categorie: newsForm.categorie,
+        image_url: imageUrl,
+        cta_label: newsForm.cta_label.trim() || null,
+        cta_url: newsForm.cta_url.trim() || null,
+      })
+      .eq("id", editingNews.id)
+      .select()
+      .single();
+
+    if (error) {
+      setNewsError(error.message);
+    } else if (data) {
+      setNews((prev) => prev.map((n) => (n.id === data.id ? data : n)));
+      cancelEdit();
+    }
+    setCreatingNews(false);
   }
 
   return (
@@ -591,7 +678,14 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
           {activeTab === "news" && (
             <div className="space-y-3">
               <button
-                onClick={() => setShowNewsForm(!showNewsForm)}
+                onClick={() => {
+                  if (showNewsForm) {
+                    cancelEdit();
+                  } else {
+                    setEditingNews(null);
+                    setShowNewsForm(true);
+                  }
+                }}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors text-sm"
               >
                 {showNewsForm ? <X size={16} /> : <Plus size={16} />}
@@ -600,6 +694,11 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
               {showNewsForm && (
                 <div className="bg-white rounded-xl p-5 shadow-sm space-y-4">
+                  {editingNews && (
+                    <p className="text-sm font-bold text-green-600 flex items-center gap-2">
+                      <Pencil size={14} /> Modifier l&apos;actualité
+                    </p>
+                  )}
                   {/* TITRE */}
                   <div>
                     <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Titre *</label>
@@ -820,12 +919,12 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                     <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{newsError}</p>
                   )}
                   <button
-                    onClick={createNewsItem}
+                    onClick={editingNews ? updateNewsItem : createNewsItem}
                     disabled={!newsForm.titre.trim() || creatingNews || uploadingImage}
                     className="px-5 py-2.5 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 transition-colors text-sm disabled:opacity-50 flex items-center gap-2"
                   >
                     {(creatingNews || uploadingImage) && <Loader2 size={14} className="animate-spin" />}
-                    {uploadingImage ? "Upload image..." : "Créer (brouillon)"}
+                    {uploadingImage ? "Upload image..." : editingNews ? "Enregistrer les modifications" : "Créer (brouillon)"}
                   </button>
                 </div>
               )}
@@ -861,6 +960,13 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                         <ToggleLeft size={14} />
                       )}
                       {n.published ? "Publié" : "Brouillon"}
+                    </button>
+                    <button
+                      onClick={() => startEditNews(n)}
+                      className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors"
+                      title="Modifier"
+                    >
+                      <Pencil size={14} />
                     </button>
                     <button
                       onClick={() => deleteNewsItem(n.id)}
