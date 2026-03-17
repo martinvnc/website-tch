@@ -93,7 +93,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       )}
 
       {/* HERO */}
-      <section className="relative bg-green-900 text-white overflow-hidden">
+      <section className="relative bg-green-900 text-white overflow-hidden min-h-[calc(100svh-64px)] sm:min-h-0 flex items-center">
         <div className="absolute inset-0">
           <Image
             src="/assets/photos/club/hero-indoor-new.jpeg"
@@ -103,7 +103,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
           />
           <div className="absolute inset-0 bg-green-900/60" />
         </div>
-        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             {/* Texte */}
             <div>
@@ -139,8 +139,8 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
               </p>
             </div>
 
-            {/* Photo */}
-            <div className="reveal d2">
+            {/* Photo — hidden on mobile */}
+            <div className="hidden lg:block reveal d2">
               <div className="relative rounded-2xl overflow-hidden aspect-[16/10] shadow-2xl">
                 <Image
                   src="/assets/photos/club/hero-indoor-new.jpeg"
