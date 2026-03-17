@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupaUser } from "@supabase/supabase-js";
@@ -16,6 +17,7 @@ const navLinks = [
 ];
 
 export function Header() {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<SupaUser | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -46,7 +48,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center h-16">
           <Link href="/" className="flex-shrink-0">
             <Image
               src="/assets/logos/logo-vert-header.png"
@@ -58,19 +60,22 @@ export function Header() {
             />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-lg text-sm font-bold text-green-900 hover:bg-green-600/10 hover:text-green-600 transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <nav className="hidden md:flex items-center gap-1 ml-6">
+            {navLinks.map((link) => {
+              const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-4 py-2 text-sm text-green-900 transition-colors border-b-2 hover:border-[#f6ca73] ${isActive ? "border-[#f6ca73]" : "border-transparent"}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
 
             {user ? (
-              <div className="relative ml-2">
+              <div className="relative ml-auto">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-green-600/10 text-green-600 hover:bg-green-600/20 transition-colors"
@@ -108,7 +113,7 @@ export function Header() {
             ) : (
               <Link
                 href="/connexion"
-                className="ml-2 px-5 py-2 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors"
+                className="ml-auto px-5 py-2 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors"
               >
                 Connexion
               </Link>
@@ -116,7 +121,7 @@ export function Header() {
           </nav>
 
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="md:hidden ml-auto p-2 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Menu"
           >
@@ -128,23 +133,26 @@ export function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t bg-white">
           <nav className="flex flex-col px-4 py-3 gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="px-4 py-3 rounded-lg text-sm font-bold text-green-900 hover:bg-green-600/10 transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`px-4 py-3 rounded-lg text-sm text-green-900 transition-colors ${isActive ? "border-l-4 border-[#f6ca73] bg-green-600/5" : "hover:bg-green-600/10"}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
 
             {user ? (
               <>
                 <Link
                   href="/mon-compte"
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 rounded-lg text-sm font-bold text-green-600 hover:bg-green-600/10 transition-colors"
+                  className="px-4 py-3 rounded-lg text-sm text-green-600 hover:bg-green-600/10 transition-colors"
                 >
                   Mon compte
                 </Link>
@@ -153,7 +161,7 @@ export function Header() {
                     setMobileOpen(false);
                     handleSignOut();
                   }}
-                  className="px-4 py-3 rounded-lg text-sm font-bold text-red-600 hover:bg-red-50 transition-colors text-left"
+                  className="px-4 py-3 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
                 >
                   Déconnexion
                 </button>
