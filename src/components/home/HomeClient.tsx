@@ -88,8 +88,17 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       )}
 
       {/* HERO */}
-      <section className="bg-green-900 text-white overflow-hidden">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
+      <section className="relative bg-green-900 text-white overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/assets/photos/club/hero-indoor-new.jpeg"
+            alt=""
+            fill
+            className="object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-green-900/60" />
+        </div>
+        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Texte */}
             <div>
