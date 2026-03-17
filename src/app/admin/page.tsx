@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { AdminClient } from "./AdminClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Administration — Tennis Club Halluin",
 };
