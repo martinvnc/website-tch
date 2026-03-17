@@ -46,7 +46,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16">
           <Link href="/" className="flex-shrink-0">
