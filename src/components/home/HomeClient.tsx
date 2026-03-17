@@ -128,20 +128,6 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                 D&eacute;couvrir le club
               </Link>
             </div>
-
-            {/* Stats */}
-            <div className="mt-12 flex flex-wrap gap-8 reveal d4">
-              {[
-                { value: "97 ans", label: "d\u2019histoire" },
-                { value: "273", label: "licenci\u00e9s" },
-                { value: "6", label: "terrains" },
-              ].map((stat, i) => (
-                <div key={i} className="text-left">
-                  <span className="text-2xl font-bold text-[#f6ca73]">{stat.value}</span>
-                  <span className="ml-1.5 text-sm text-white/60">{stat.label}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
