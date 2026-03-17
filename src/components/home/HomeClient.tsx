@@ -223,6 +223,15 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                 );
               })}
             </div>
+            <div className="mt-10 text-center reveal d4">
+              <Link
+                href="/actualites"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-sm border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition-colors"
+              >
+                Voir toutes les actualit&eacute;s
+                <ArrowRight size={16} />
+              </Link>
+            </div>
           </div>
         </section>
       )}
