@@ -69,7 +69,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
         <div className="bg-green-600 text-white overflow-hidden">
           <div className="ticker-track flex whitespace-nowrap animate-ticker">
             {[...ticker, ...ticker].map((item, i) => (
-              <span key={i} className="inline-block px-8 py-2 text-sm font-bold">
+              <span key={i} className="inline-block px-8 py-1 text-xs font-bold">
                 {item.texte}
                 <span className="mx-4 text-yellow-400">•</span>
               </span>
@@ -98,7 +98,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
             priority
           />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40">
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40">
           <div className="max-w-2xl">
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
               Tennis Club
@@ -149,7 +149,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* NEWS */}
       {news.length > 0 && (
         <section className="py-16 sm:py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center reveal">
               <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
                 Actualités du club
@@ -210,7 +210,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* RÉSULTATS */}
       {resultats.length > 0 && (
         <section className="py-16 sm:py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center reveal">
               <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
                 Derniers résultats
@@ -277,7 +277,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
 
       {/* TERRAINS */}
       <section className="py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center reveal">
             <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
               Nos installations
@@ -324,7 +324,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* SPONSORS */}
       {sponsors.length > 0 && (
         <section className="py-12 bg-white border-t border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-center text-xs font-bold text-muted-foreground uppercase tracking-wider mb-6 reveal">
               Nos partenaires
             </p>
@@ -356,7 +356,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
 
       {/* CTA */}
       <section className="py-16 sm:py-20 bg-green-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
           <h2 className="text-3xl sm:text-4xl font-bold">
             Rejoignez le <span className="text-yellow-400">TCH</span>
           </h2>
