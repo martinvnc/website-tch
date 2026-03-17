@@ -25,6 +25,12 @@ export function Header() {
   useEffect(() => {
     const supabase = createClient();
 
+    // getSession est synchrone (cache local) → état immédiat
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // getUser valide côté serveur → mise à jour si besoin
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
     });
