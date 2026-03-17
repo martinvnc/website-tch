@@ -737,27 +737,27 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                       <Pencil size={14} /> Modifier l&apos;actualité
                     </p>
                   )}
-                  {/* TITRE */}
-                  <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Titre *</label>
-                    <input
-                      type="text"
-                      value={newsForm.titre}
-                      onChange={(e) => setNewsForm({ ...newsForm, titre: e.target.value })}
-                      placeholder="Titre de l&apos;actualité"
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
-                    />
-                  </div>
-
-                  {/* DATE */}
-                  <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Date de publication</label>
-                    <input
-                      type="date"
-                      value={newsForm.date_publication}
-                      onChange={(e) => setNewsForm({ ...newsForm, date_publication: e.target.value })}
-                      className="w-full sm:w-auto px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
-                    />
+                  {/* TITRE + DATE */}
+                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Titre *</label>
+                      <input
+                        type="text"
+                        value={newsForm.titre}
+                        onChange={(e) => setNewsForm({ ...newsForm, titre: e.target.value })}
+                        placeholder="Titre de l&apos;actualité"
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Date</label>
+                      <input
+                        type="date"
+                        value={newsForm.date_publication}
+                        onChange={(e) => setNewsForm({ ...newsForm, date_publication: e.target.value })}
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      />
+                    </div>
                   </div>
 
                   {/* RICH TEXT EDITOR */}
