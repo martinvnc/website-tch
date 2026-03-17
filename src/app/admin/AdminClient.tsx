@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useReveal } from "@/hooks/useReveal";
 import { createClient } from "@/lib/supabase/client";
 import {
   Users, Calendar, MessageSquare, Key, Newspaper, BarChart3,
@@ -95,7 +94,6 @@ const newsCategories = [
 ];
 
 export function AdminClient({ stats, codes: initialCodes, recentTickets: initialTickets, recentReservations, news: initialNews }: Props) {
-  useReveal();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [codes, setCodes] = useState(initialCodes);
   const [tickets, setTickets] = useState(initialTickets);
@@ -249,7 +247,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
           {/* DASHBOARD */}
           {activeTab === "dashboard" && (
-            <div className="reveal space-y-6">
+            <div className="space-y-6">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { label: "Membres", value: stats.membres, icon: <Users size={20} />, color: "text-green-600" },
@@ -319,7 +317,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
           {/* TICKETS */}
           {activeTab === "tickets" && (
-            <div className="reveal space-y-3">
+            <div className="space-y-3">
               {viewingTicket ? (
                 <div className="bg-white rounded-xl p-6 shadow-sm">
                   <button
@@ -405,7 +403,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
           {/* CODES */}
           {activeTab === "codes" && (
-            <div className="reveal space-y-3">
+            <div className="space-y-3">
               <button
                 onClick={() => setShowCodeForm(!showCodeForm)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors text-sm"
@@ -478,7 +476,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
           {/* NEWS */}
           {activeTab === "news" && (
-            <div className="reveal space-y-3">
+            <div className="space-y-3">
               <button
                 onClick={() => setShowNewsForm(!showNewsForm)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors text-sm"
