@@ -88,7 +88,7 @@ const statutLabels: Record<string, string> = {
   archive: "Archivé",
 };
 
-const defaultNewsCategories = [
+const initialNewsCategories = [
   { value: "club", label: "Club" },
   { value: "tournoi", label: "Tournoi" },
   { value: "soiree", label: "Soirée" },
@@ -130,22 +130,23 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Dynamic categories
-  const [customCategories, setCustomCategories] = useState<{ value: string; label: string }[]>([]);
+  // Dynamic categories (all editable)
+  const [newsCategories, setNewsCategories] = useState(initialNewsCategories);
   const [showNewCatInput, setShowNewCatInput] = useState(false);
   const [newCatName, setNewCatName] = useState("");
-  const allNewsCategories = [...defaultNewsCategories, ...customCategories];
 
-  // Load custom categories from existing news
+  // Load extra categories from existing news
   useEffect(() => {
     const existingCats = new Set(news.map((n) => n.categorie));
-    const extras: { value: string; label: string }[] = [];
-    existingCats.forEach((cat) => {
-      if (!defaultNewsCategories.some((d) => d.value === cat)) {
-        extras.push({ value: cat, label: cat.charAt(0).toUpperCase() + cat.slice(1) });
-      }
+    setNewsCategories((prev) => {
+      const merged = [...prev];
+      existingCats.forEach((cat) => {
+        if (!merged.some((m) => m.value === cat)) {
+          merged.push({ value: cat, label: cat.charAt(0).toUpperCase() + cat.slice(1) });
+        }
+      });
+      return merged;
     });
-    if (extras.length > 0) setCustomCategories(extras);
   }, [news]);
 
   const supabase = createClient();
@@ -237,11 +238,20 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     const name = newCatName.trim();
     if (!name) return;
     const value = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "_");
-    if (allNewsCategories.some((c) => c.value === value)) return;
-    setCustomCategories((prev) => [...prev, { value, label: name }]);
+    if (newsCategories.some((c) => c.value === value)) return;
+    setNewsCategories((prev) => [...prev, { value, label: name }]);
     setNewsForm({ ...newsForm, categorie: value });
     setNewCatName("");
     setShowNewCatInput(false);
+  }
+
+  function removeCategory(catValue: string) {
+    if (newsCategories.length <= 1) return;
+    setNewsCategories((prev) => prev.filter((c) => c.value !== catValue));
+    if (newsForm.categorie === catValue) {
+      const remaining = newsCategories.filter((c) => c.value !== catValue);
+      setNewsForm({ ...newsForm, categorie: remaining[0]?.value ?? "club" });
+    }
   }
 
   // --- NEWS ACTIONS ---
@@ -707,31 +717,27 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                   <div>
                     <label className="block text-xs font-bold text-muted-foreground uppercase mb-2">Catégorie</label>
                     <div className="flex flex-wrap gap-2">
-                      {allNewsCategories.map((cat) => {
+                      {newsCategories.map((cat) => {
                         const isSelected = newsForm.categorie === cat.value;
-                        const isCustom = !defaultNewsCategories.some((d) => d.value === cat.value);
                         return (
                           <div key={cat.value} className="relative group">
                             <button
                               type="button"
                               onClick={() => setNewsForm({ ...newsForm, categorie: cat.value })}
-                              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors pr-7 ${
                                 isSelected
                                   ? "bg-green-600 text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              } ${isCustom ? "pr-7" : ""}`}
+                              }`}
                             >
                               {cat.label}
                             </button>
-                            {isCustom && (
+                            {newsCategories.length > 1 && (
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setCustomCategories((prev) => prev.filter((c) => c.value !== cat.value));
-                                  if (newsForm.categorie === cat.value) {
-                                    setNewsForm({ ...newsForm, categorie: "club" });
-                                  }
+                                  removeCategory(cat.value);
                                 }}
                                 className={`absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-full transition-colors ${
                                   isSelected
