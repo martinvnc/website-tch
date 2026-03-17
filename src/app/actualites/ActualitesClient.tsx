@@ -1,10 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useReveal } from "@/hooks/useReveal";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { parseImageUrls } from "@/lib/utils";
+import { NewsCarousel } from "@/components/ui/NewsCarousel";
 
 type News = {
   id: string;
@@ -96,21 +97,18 @@ export function ActualitesClient({ news }: { news: News[] }) {
                     className="group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100 animate-fade-in"
                     style={{ animationDelay: `${(i % 3) * 100}ms` }}
                   >
-                    {item.image_url && (
-                      <div className="relative h-48 sm:h-52 overflow-hidden">
-                        <Image
-                          src={item.image_url}
-                          alt={item.titre}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <span
-                          className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold ${badge.bg} ${badge.text} rounded-full`}
-                        >
-                          {badge.label}
-                        </span>
-                      </div>
-                    )}
+                    {item.image_url && (() => {
+                      const images = parseImageUrls(item.image_url);
+                      return images.length > 0 ? (
+                        <NewsCarousel images={images} alt={item.titre} className="h-48 sm:h-52">
+                          <span
+                            className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold ${badge.bg} ${badge.text} rounded-full z-10`}
+                          >
+                            {badge.label}
+                          </span>
+                        </NewsCarousel>
+                      ) : null;
+                    })()}
                     {!item.image_url && (
                       <div className="px-6 pt-5">
                         <span

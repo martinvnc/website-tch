@@ -6,8 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Users, Calendar, MessageSquare, Key, Newspaper, BarChart3,
   GraduationCap, Loader2, Plus, X, ChevronDown, Eye, Trash2, ToggleLeft, ToggleRight,
-  Bold, Italic, Underline, Upload, ImageIcon, Pencil,
+  Bold, Italic, Underline, Upload, ImageIcon, Pencil, ArrowUp, ArrowDown,
 } from "lucide-react";
+import { parseImageUrls } from "@/lib/utils";
 
 type Stats = {
   membres: number;
@@ -124,9 +125,9 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   // Rich text editor
   const editorRef = useRef<HTMLDivElement>(null);
 
-  // Image upload
-  const [newsImageFile, setNewsImageFile] = useState<File | null>(null);
-  const [newsImagePreview, setNewsImagePreview] = useState<string | null>(null);
+  // Multi-image upload
+  type ImageEntry = { url: string; file?: File };
+  const [newsImages, setNewsImages] = useState<ImageEntry[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -208,19 +209,21 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   }, []);
 
   // --- IMAGE HELPERS ---
-  function handleImageSelect(file: File) {
-    if (!file.type.startsWith("image/")) return;
-    setNewsImageFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => setNewsImagePreview(e.target?.result as string);
-    reader.readAsDataURL(file);
+  function handleImageFiles(files: FileList | File[]) {
+    const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    arr.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setNewsImages((prev) => [...prev, { url: e.target?.result as string, file }]);
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleImageSelect(file);
+    if (e.dataTransfer.files.length) handleImageFiles(e.dataTransfer.files);
   }
 
   function handleDragOver(e: React.DragEvent) {
@@ -228,9 +231,22 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     setIsDragging(true);
   }
 
-  function removeImage() {
-    setNewsImageFile(null);
-    setNewsImagePreview(null);
+  function removeImageAt(index: number) {
+    setNewsImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function moveImage(index: number, direction: -1 | 1) {
+    setNewsImages((prev) => {
+      const arr = [...prev];
+      const target = index + direction;
+      if (target < 0 || target >= arr.length) return arr;
+      [arr[index], arr[target]] = [arr[target], arr[index]];
+      return arr;
+    });
+  }
+
+  function clearAllImages() {
+    setNewsImages([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -255,34 +271,46 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     }
   }
 
+  // --- UPLOAD ALL IMAGES HELPER ---
+  async function uploadAllImages(images: ImageEntry[]): Promise<string[] | null> {
+    const urls: string[] = [];
+    for (const img of images) {
+      if (img.file) {
+        const ext = img.file.name.split(".").pop()?.toLowerCase() || "jpg";
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("news-images")
+          .upload(fileName, img.file, { cacheControl: "3600", upsert: false });
+        if (uploadError) {
+          setNewsError("Erreur upload image : " + uploadError.message);
+          return null;
+        }
+        const { data: urlData } = supabase.storage.from("news-images").getPublicUrl(fileName);
+        urls.push(urlData.publicUrl);
+      } else {
+        // Already uploaded image (from edit)
+        urls.push(img.url);
+      }
+    }
+    return urls;
+  }
+
   // --- NEWS ACTIONS ---
   async function createNewsItem() {
     if (!newsForm.titre.trim()) return;
     setCreatingNews(true);
     setNewsError(null);
 
-    let imageUrl: string | null = null;
+    let imageUrlField: string | null = null;
 
-    // Upload image if selected
-    if (newsImageFile) {
+    if (newsImages.length > 0) {
       setUploadingImage(true);
-      const ext = newsImageFile.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("news-images")
-        .upload(fileName, newsImageFile, { cacheControl: "3600", upsert: false });
-      if (uploadError) {
-        setNewsError("Erreur upload image : " + uploadError.message);
-        setCreatingNews(false);
-        setUploadingImage(false);
-        return;
-      }
-      const { data: urlData } = supabase.storage.from("news-images").getPublicUrl(fileName);
-      imageUrl = urlData.publicUrl;
+      const urls = await uploadAllImages(newsImages);
       setUploadingImage(false);
+      if (!urls) { setCreatingNews(false); return; }
+      imageUrlField = urls.length === 1 ? urls[0] : JSON.stringify(urls);
     }
 
-    // Get rich text content
     const htmlContent = editorRef.current?.innerHTML?.trim() || null;
     const cleanContent = htmlContent === "<br>" || htmlContent === "<div><br></div>" ? null : htmlContent;
 
@@ -292,7 +320,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
         titre: newsForm.titre.trim(),
         texte: cleanContent,
         categorie: newsForm.categorie,
-        image_url: imageUrl,
+        image_url: imageUrlField,
         cta_label: newsForm.cta_label.trim() || null,
         cta_url: newsForm.cta_url.trim() || null,
         published: false,
@@ -306,7 +334,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       setNews((prev) => [data, ...prev]);
       setNewsForm({ titre: "", categorie: "club", cta_label: "", cta_url: "" });
       if (editorRef.current) editorRef.current.innerHTML = "";
-      removeImage();
+      clearAllImages();
       setShowNewsForm(false);
     }
     setCreatingNews(false);
@@ -342,14 +370,10 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       cta_label: item.cta_label || "",
       cta_url: item.cta_url || "",
     });
-    if (item.image_url) {
-      setNewsImagePreview(item.image_url);
-      setNewsImageFile(null); // no new file yet
-    } else {
-      removeImage();
-    }
+    // Load existing images
+    const existingUrls = parseImageUrls(item.image_url);
+    setNewsImages(existingUrls.map((url) => ({ url })));
     setShowNewsForm(true);
-    // Set editor content after render
     setTimeout(() => {
       if (editorRef.current) {
         editorRef.current.innerHTML = item.texte || "";
@@ -361,7 +385,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     setEditingNews(null);
     setNewsForm({ titre: "", categorie: "club", cta_label: "", cta_url: "" });
     if (editorRef.current) editorRef.current.innerHTML = "";
-    removeImage();
+    clearAllImages();
     setShowNewsForm(false);
   }
 
@@ -370,28 +394,14 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     setCreatingNews(true);
     setNewsError(null);
 
-    let imageUrl: string | null = editingNews.image_url;
+    let imageUrlField: string | null = null;
 
-    // Upload new image if a new file was selected
-    if (newsImageFile) {
+    if (newsImages.length > 0) {
       setUploadingImage(true);
-      const ext = newsImageFile.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("news-images")
-        .upload(fileName, newsImageFile, { cacheControl: "3600", upsert: false });
-      if (uploadError) {
-        setNewsError("Erreur upload image : " + uploadError.message);
-        setCreatingNews(false);
-        setUploadingImage(false);
-        return;
-      }
-      const { data: urlData } = supabase.storage.from("news-images").getPublicUrl(fileName);
-      imageUrl = urlData.publicUrl;
+      const urls = await uploadAllImages(newsImages);
       setUploadingImage(false);
-    } else if (!newsImagePreview) {
-      // Image was removed
-      imageUrl = null;
+      if (!urls) { setCreatingNews(false); return; }
+      imageUrlField = urls.length === 1 ? urls[0] : JSON.stringify(urls);
     }
 
     const htmlContent = editorRef.current?.innerHTML?.trim() || null;
@@ -403,7 +413,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
         titre: newsForm.titre.trim(),
         texte: cleanContent,
         categorie: newsForm.categorie,
-        image_url: imageUrl,
+        image_url: imageUrlField,
         cta_label: newsForm.cta_label.trim() || null,
         cta_url: newsForm.cta_url.trim() || null,
       })
@@ -761,55 +771,95 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                     `}</style>
                   </div>
 
-                  {/* IMAGE UPLOAD */}
+                  {/* IMAGES UPLOAD (multi) */}
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Image</label>
-                    {!newsImagePreview ? (
-                      <div
-                        onDrop={handleDrop}
-                        onDragOver={handleDragOver}
-                        onDragLeave={() => setIsDragging(false)}
-                        onClick={() => fileInputRef.current?.click()}
-                        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                          isDragging
-                            ? "border-green-600 bg-green-50"
-                            : "border-gray-200 hover:border-green-600 hover:bg-green-50/50"
-                        }`}
-                      >
-                        <Upload size={24} className="mx-auto text-gray-400 mb-2" />
-                        <p className="text-sm text-gray-500">
-                          <span className="font-semibold text-green-600">Cliquez</span> ou glissez une image ici
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP (max 5 Mo)</p>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleImageSelect(file);
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="relative rounded-lg overflow-hidden border border-gray-200">
-                        <div className="relative h-48">
-                          <Image src={newsImagePreview} alt="Aperçu" fill className="object-cover" />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={removeImage}
-                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                        >
-                          <X size={14} />
-                        </button>
-                        <div className="px-3 py-2 bg-gray-50 text-xs text-gray-500 flex items-center gap-1.5">
-                          <ImageIcon size={12} />
-                          {newsImageFile?.name}
-                        </div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+                      Photos {newsImages.length > 0 && <span className="text-green-600">({newsImages.length})</span>}
+                    </label>
+
+                    {/* Thumbnails grid with reorder */}
+                    {newsImages.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                        {newsImages.map((img, idx) => (
+                          <div key={idx} className="relative rounded-lg overflow-hidden border border-gray-200 group">
+                            <div className="relative h-28">
+                              <Image src={img.url} alt={`Photo ${idx + 1}`} fill className="object-cover" />
+                            </div>
+                            {/* Order badge */}
+                            <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-black/60 text-white text-[10px] font-bold flex items-center justify-center">
+                              {idx + 1}
+                            </span>
+                            {/* Actions overlay */}
+                            <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {idx > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveImage(idx, -1)}
+                                  className="p-1 rounded-full bg-black/60 text-white hover:bg-black/80"
+                                  title="Monter"
+                                >
+                                  <ArrowUp size={12} />
+                                </button>
+                              )}
+                              {idx < newsImages.length - 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveImage(idx, 1)}
+                                  className="p-1 rounded-full bg-black/60 text-white hover:bg-black/80"
+                                  title="Descendre"
+                                >
+                                  <ArrowDown size={12} />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => removeImageAt(idx)}
+                                className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
+                                title="Supprimer"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                            {/* File name */}
+                            {img.file && (
+                              <div className="px-2 py-1 bg-gray-50 text-[10px] text-gray-500 truncate flex items-center gap-1">
+                                <ImageIcon size={10} />
+                                {img.file.name}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
+
+                    {/* Drop zone (always visible to add more) */}
+                    <div
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                      onDragLeave={() => setIsDragging(false)}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                        isDragging
+                          ? "border-green-600 bg-green-50"
+                          : "border-gray-200 hover:border-green-600 hover:bg-green-50/50"
+                      }`}
+                    >
+                      <Upload size={20} className="mx-auto text-gray-400 mb-1" />
+                      <p className="text-sm text-gray-500">
+                        <span className="font-semibold text-green-600">Cliquez</span> ou glissez {newsImages.length > 0 ? "d\u2019autres photos" : "des photos"} ici
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP — plusieurs fichiers possibles</p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files?.length) handleImageFiles(e.target.files);
+                        }}
+                      />
+                    </div>
                   </div>
 
                   {/* CATÉGORIE */}
@@ -940,7 +990,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                     <p className="text-xs text-muted-foreground mt-1">
                       <span className="inline-block px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-semibold mr-1">{n.categorie}</span>
                       {new Date(n.date_publication).toLocaleDateString("fr-FR")}
-                      {n.image_url && <span className="ml-1">· 🖼️</span>}
+                      {n.image_url && <span className="ml-1">· 🖼️ {parseImageUrls(n.image_url).length > 1 ? `(${parseImageUrls(n.image_url).length})` : ""}</span>}
                       {n.cta_label && <span className="ml-1">· 🔗 {n.cta_label}</span>}
                     </p>
                   </div>

@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useReveal } from "@/hooks/useReveal";
 import { Trophy, Minus, X, ArrowRight } from "lucide-react";
+import { parseImageUrls } from "@/lib/utils";
+import { NewsCarousel } from "@/components/ui/NewsCarousel";
 
 type News = {
   id: string;
@@ -178,21 +180,18 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                     key={item.id}
                     className={`reveal d${Math.min(i + 1, 4)} group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100`}
                   >
-                    {item.image_url && (
-                      <div className="relative h-52 sm:h-60 overflow-hidden">
-                        <Image
-                          src={item.image_url}
-                          alt={item.titre}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <span
-                          className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold ${badge.bg} ${badge.text} rounded-full capitalize`}
-                        >
-                          {item.categorie}
-                        </span>
-                      </div>
-                    )}
+                    {item.image_url && (() => {
+                      const images = parseImageUrls(item.image_url);
+                      return images.length > 0 ? (
+                        <NewsCarousel images={images} alt={item.titre} className="h-52 sm:h-60">
+                          <span
+                            className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold ${badge.bg} ${badge.text} rounded-full capitalize z-10`}
+                          >
+                            {item.categorie}
+                          </span>
+                        </NewsCarousel>
+                      ) : null;
+                    })()}
                     <div className="p-6">
                       <p className="text-xs text-muted-foreground mb-2">
                         {new Date(item.date_publication).toLocaleDateString("fr-FR", {
