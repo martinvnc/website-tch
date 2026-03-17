@@ -100,7 +100,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
           <div className="absolute inset-0 bg-gradient-to-r from-green-900/70 via-green-900/50 to-transparent" />
         </div>
         <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 w-full">
-          <div className="max-w-2xl">
+          <div className="text-center max-w-3xl mx-auto">
             <p className="text-[#f6ca73] font-medium tracking-widest uppercase text-sm mb-4 reveal">
               Depuis 1927
             </p>
@@ -109,12 +109,12 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
               <br />
               <span className="text-[#f6ca73]">Halluin</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed max-w-lg reveal d2">
+            <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed max-w-lg mx-auto reveal d2">
               6 terrains, une communaut&eacute; passionn&eacute;e.
               <br />
               R&eacute;servez votre terrain en quelques clics.
             </p>
-            <div className="mt-10 flex flex-wrap gap-4 reveal d3">
+            <div className="mt-10 flex flex-wrap justify-center gap-4 reveal d3">
               <Link
                 href="/reservation"
                 className="px-7 py-3.5 rounded-full font-semibold bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] btn-primary transition-colors text-sm"
