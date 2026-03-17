@@ -106,7 +106,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
         <div className="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             {/* Texte */}
-            <div>
+            <div className="text-center lg:text-left">
               <p className="text-[#f6ca73] font-medium tracking-widest uppercase text-sm mb-4 reveal">
                 Depuis 1927
               </p>
@@ -115,12 +115,12 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                 <br />
                 <span className="text-[#f6ca73]">Halluin</span>
               </h1>
-              <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed max-w-lg reveal d2">
+              <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed max-w-lg mx-auto lg:mx-0 reveal d2">
                 6 terrains, une communaut&eacute; passionn&eacute;e.
                 <br />
                 R&eacute;servez votre terrain en quelques clics.
               </p>
-              <div className="mt-8 flex flex-wrap gap-4 reveal d3">
+              <div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start reveal d3">
                 <Link
                   href="/reservation"
                   className="px-7 py-3.5 rounded-full font-semibold bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] btn-primary transition-colors text-sm"
@@ -134,7 +134,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                   D&eacute;couvrir le club
                 </Link>
               </div>
-              <p className="mt-8 text-xs text-white/40 tracking-wider uppercase reveal d4">
+              <p className="mt-4 text-xs text-white/40 tracking-wider uppercase reveal d4">
                 Indoor &bull; Outdoor &bull; Comp&eacute;titions &bull; Stages
               </p>
             </div>
