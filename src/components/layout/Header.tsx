@@ -47,7 +47,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16">
           <Link href="/" className="flex-shrink-0">
             <Image
@@ -116,13 +116,13 @@ export function Header() {
                 <>
                   <Link
                     href="/connexion"
-                    className="px-5 py-2 rounded-full text-sm border border-green-900 text-green-900 hover:bg-green-600 hover:border-green-600 hover:text-white transition-colors"
+                    className="px-5 py-2 rounded-full text-sm text-green-900 hover:text-green-600 transition-colors"
                   >
                     Se connecter
                   </Link>
                   <Link
                     href="/connexion?tab=register"
-                    className="px-5 py-2 rounded-full text-sm bg-green-600 text-white hover:bg-green-800 transition-colors"
+                    className="px-4 py-1.5 rounded-full text-xs bg-green-600 text-white hover:bg-green-800 transition-colors"
                   >
                     S&apos;inscrire
                   </Link>
@@ -182,14 +182,14 @@ export function Header() {
                 <Link
                   href="/connexion"
                   onClick={() => setMobileOpen(false)}
-                  className="px-5 py-3 rounded-full text-sm border border-green-900 text-green-900 text-center hover:bg-green-600 hover:border-green-600 hover:text-white transition-colors"
+                  className="px-5 py-3 rounded-full text-sm text-green-900 text-center hover:text-green-600 transition-colors"
                 >
                   Se connecter
                 </Link>
                 <Link
                   href="/connexion?tab=register"
                   onClick={() => setMobileOpen(false)}
-                  className="px-5 py-3 rounded-full text-sm bg-green-600 text-white text-center hover:bg-green-800 transition-colors"
+                  className="px-4 py-2.5 rounded-full text-xs bg-green-600 text-white text-center hover:bg-green-800 transition-colors"
                 >
                   S&apos;inscrire
                 </Link>
