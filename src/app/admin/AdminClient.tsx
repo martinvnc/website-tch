@@ -703,54 +703,86 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                     )}
                   </div>
 
-                  {/* CATÉGORIE + CTA */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Catégorie</label>
+                  {/* CATÉGORIE */}
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-2">Catégorie</label>
+                    <div className="flex flex-wrap gap-2">
+                      {allNewsCategories.map((cat) => {
+                        const isSelected = newsForm.categorie === cat.value;
+                        const isCustom = !defaultNewsCategories.some((d) => d.value === cat.value);
+                        return (
+                          <div key={cat.value} className="relative group">
+                            <button
+                              type="button"
+                              onClick={() => setNewsForm({ ...newsForm, categorie: cat.value })}
+                              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                                isSelected
+                                  ? "bg-green-600 text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              } ${isCustom ? "pr-7" : ""}`}
+                            >
+                              {cat.label}
+                            </button>
+                            {isCustom && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCustomCategories((prev) => prev.filter((c) => c.value !== cat.value));
+                                  if (newsForm.categorie === cat.value) {
+                                    setNewsForm({ ...newsForm, categorie: "club" });
+                                  }
+                                }}
+                                className={`absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-full transition-colors ${
+                                  isSelected
+                                    ? "text-white/70 hover:text-white hover:bg-white/20"
+                                    : "text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                }`}
+                                title="Supprimer cette catégorie"
+                              >
+                                <X size={12} />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {/* Bouton ajouter */}
                       {!showNewCatInput ? (
-                        <div className="flex gap-2">
-                          <select
-                            value={newsForm.categorie}
-                            onChange={(e) => {
-                              if (e.target.value === "__new__") {
-                                setShowNewCatInput(true);
-                              } else {
-                                setNewsForm({ ...newsForm, categorie: e.target.value });
-                              }
-                            }}
-                            className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
-                          >
-                            {allNewsCategories.map((cat) => (
-                              <option key={cat.value} value={cat.value}>{cat.label}</option>
-                            ))}
-                            <option value="__new__">+ Nouvelle catégorie</option>
-                          </select>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowNewCatInput(true)}
+                          className="px-3 py-1.5 rounded-full text-sm font-medium border-2 border-dashed border-gray-300 text-gray-500 hover:border-green-600 hover:text-green-600 transition-colors flex items-center gap-1"
+                        >
+                          <Plus size={12} /> Nouvelle
+                        </button>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-1.5">
                           <input
                             type="text"
                             value={newCatName}
                             onChange={(e) => setNewCatName(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && addCustomCategory()}
-                            placeholder="Nom de la catégorie"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") addCustomCategory();
+                              if (e.key === "Escape") { setShowNewCatInput(false); setNewCatName(""); }
+                            }}
+                            placeholder="Nom..."
                             autoFocus
-                            className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                            className="w-28 px-2.5 py-1.5 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
                           />
                           <button
                             type="button"
                             onClick={addCustomCategory}
                             disabled={!newCatName.trim()}
-                            className="px-3 py-2.5 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-800 transition-colors disabled:opacity-50"
+                            className="p-1.5 rounded-full bg-green-600 text-white hover:bg-green-800 transition-colors disabled:opacity-50"
                           >
-                            OK
+                            <Plus size={12} />
                           </button>
                           <button
                             type="button"
                             onClick={() => { setShowNewCatInput(false); setNewCatName(""); }}
-                            className="px-3 py-2.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 transition-colors"
+                            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-400"
                           >
-                            <X size={14} />
+                            <X size={12} />
                           </button>
                         </div>
                       )}
