@@ -211,7 +211,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         />
                       )}
                       {item.cta_label && item.cta_url && (
-                        <span className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-green-600 hover:text-green-800 transition-colors">
+                        <span className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-sm font-bold bg-green-600 text-white group-hover:bg-green-800 transition-colors">
                           {item.cta_label}
                           <ArrowRight size={14} />
                         </span>

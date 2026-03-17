@@ -138,7 +138,7 @@ export function ActualitesClient({ news }: { news: News[] }) {
                       {item.cta_label && item.cta_url && (
                         <Link
                           href={item.cta_url}
-                          className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-green-600 hover:text-green-800 transition-colors"
+                          className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-sm font-bold bg-green-600 text-white hover:bg-green-800 transition-colors"
                         >
                           {item.cta_label}
                           <ArrowRight size={14} />
