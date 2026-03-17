@@ -88,7 +88,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       )}
 
       {/* HERO */}
-      <section className="relative bg-green-900 text-white overflow-hidden min-h-[85vh] flex items-center">
+      <section className="relative bg-green-900 text-white overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/assets/photos/club/hero-indoor-new.jpeg"
@@ -104,7 +104,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
             <p className="text-[#f6ca73] font-medium tracking-widest uppercase text-sm mb-4 reveal">
               Depuis 1927
             </p>
-            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.1] reveal d1">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] reveal d1">
               Tennis Club
               <br />
               <span className="text-[#f6ca73]">Halluin</span>
