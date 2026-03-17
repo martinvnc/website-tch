@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useReveal } from "@/hooks/useReveal";
-import { Trophy, Minus, X } from "lucide-react";
+import { Trophy, Minus, X, ArrowRight, Calendar, MapPin, Users } from "lucide-react";
 
 type News = {
   id: string;
@@ -47,7 +47,7 @@ type Props = {
 };
 
 const categorieBadge: Record<string, { bg: string; text: string }> = {
-  soiree: { bg: "bg-yellow-400", text: "text-green-900" },
+  soiree: { bg: "bg-[#f6ca73]", text: "text-green-900" },
   stage: { bg: "bg-green-500", text: "text-white" },
   tournoi: { bg: "bg-green-600", text: "text-white" },
   club: { bg: "bg-green-800", text: "text-white" },
@@ -56,7 +56,7 @@ const categorieBadge: Record<string, { bg: string; text: string }> = {
 const resultatStyle: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   win: { icon: <Trophy size={16} />, color: "text-green-600", label: "Victoire" },
   loss: { icon: <X size={16} />, color: "text-red-500", label: "Défaite" },
-  draw: { icon: <Minus size={16} />, color: "text-yellow-600", label: "Nul" },
+  draw: { icon: <Minus size={16} />, color: "text-[#f6ca73]", label: "Nul" },
 };
 
 export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Props) {
@@ -69,9 +69,9 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
         <div className="bg-green-600 text-white overflow-hidden">
           <div className="ticker-track flex whitespace-nowrap animate-ticker">
             {[...ticker, ...ticker].map((item, i) => (
-              <span key={i} className="inline-block px-8 py-1 text-xs font-bold">
+              <span key={i} className="inline-block px-8 py-1 text-xs font-medium tracking-wide">
                 {item.texte}
-                <span className="mx-4 text-yellow-400">•</span>
+                <span className="mx-4 text-[#f6ca73]">&bull;</span>
               </span>
             ))}
           </div>
@@ -88,57 +88,63 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       )}
 
       {/* HERO */}
-      <section className="relative bg-green-900 text-white overflow-hidden">
+      <section className="relative bg-green-900 text-white overflow-hidden min-h-[85vh] flex items-center">
         <div className="absolute inset-0">
           <Image
             src="/assets/photos/club/hero-indoor-new.jpeg"
             alt="Courts du Tennis Club Halluin"
             fill
-            className="object-cover opacity-30"
+            className="object-cover opacity-25"
             priority
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-900/70 to-transparent" />
         </div>
-        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40">
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 w-full">
           <div className="max-w-2xl">
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
+            <p className="text-[#f6ca73] font-medium tracking-widest uppercase text-sm mb-4 reveal">
+              Depuis 1927
+            </p>
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.1] reveal d1">
               Tennis Club
               <br />
-              <span className="text-yellow-400">Halluin</span>
+              <span className="text-[#f6ca73]">Halluin</span>
             </h1>
-            <p className="mt-4 text-lg sm:text-xl text-white/80">
-              Depuis 1927 — 6 terrains, une communauté passionnée.
+            <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed max-w-lg reveal d2">
+              6 terrains, une communaut&eacute; passionn&eacute;e.
               <br />
-              Réservez votre terrain en quelques clics.
+              R&eacute;servez votre terrain en quelques clics.
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-10 flex flex-wrap gap-4 reveal d3">
               <Link
                 href="/reservation"
-                className="px-6 py-3 rounded-lg font-extrabold bg-yellow-400 text-green-900 hover:bg-yellow-300 btn-primary transition-colors"
+                className="px-7 py-3.5 rounded-full font-semibold bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] btn-primary transition-colors text-sm"
               >
-                Réserver un terrain
+                R&eacute;server un terrain
               </Link>
               <Link
                 href="/le-club"
-                className="px-6 py-3 rounded-lg font-bold bg-white/10 text-white hover:bg-white/20 transition-colors border border-white/20"
+                className="px-7 py-3.5 rounded-full font-semibold text-white hover:bg-white/10 transition-colors border border-white/30 text-sm"
               >
-                Découvrir le club
+                D&eacute;couvrir le club
               </Link>
             </div>
 
             {/* Stat chips */}
-            <div className="mt-10 flex flex-wrap gap-3">
+            <div className="mt-14 flex flex-wrap gap-4">
               {[
-                { value: "97 ans", label: "Années d'histoire" },
-                { value: "273", label: "Licenciés" },
-                { value: "6", label: "Terrains" },
-                { value: "14", label: "Événements / an" },
+                { value: "97", label: "ann\u00e9es d\u2019histoire", icon: <Calendar size={18} /> },
+                { value: "273", label: "licenci\u00e9s", icon: <Users size={18} /> },
+                { value: "6", label: "terrains", icon: <MapPin size={18} /> },
               ].map((stat, i) => (
                 <div
                   key={i}
-                  className={`reveal d${i + 1} bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2.5`}
+                  className={`reveal d${i + 1} flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-5 py-3`}
                 >
-                  <span className="text-lg font-extrabold text-yellow-400">{stat.value}</span>
-                  <span className="ml-2 text-xs text-white/70">{stat.label}</span>
+                  <span className="text-[#f6ca73]">{stat.icon}</span>
+                  <div>
+                    <span className="text-xl font-bold text-white">{stat.value}</span>
+                    <span className="ml-1.5 text-xs text-white/60">{stat.label}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -148,54 +154,65 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
 
       {/* NEWS */}
       {news.length > 0 && (
-        <section className="py-16 sm:py-20">
+        <section className="py-20 sm:py-28">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center reveal">
-              <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
-                Actualités du club
+              <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
+                Restez inform&eacute;s
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-green-900">
+                Actualit&eacute;s du club
               </h2>
-              <p className="mt-2 text-muted-foreground">
-                Les dernières nouvelles du TCH
+              <p className="mt-3 text-muted-foreground max-w-md mx-auto">
+                Les derni&egrave;res nouvelles du Tennis Club Halluin
               </p>
             </div>
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
               {news.map((item, i) => {
                 const badge = categorieBadge[item.categorie] ?? categorieBadge.club;
                 return (
                   <div
                     key={item.id}
-                    className={`reveal d${Math.min(i + 1, 4)} bg-white rounded-2xl overflow-hidden shadow-sm card-hover`}
+                    className={`reveal d${Math.min(i + 1, 4)} group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100`}
                   >
                     {item.image_url && (
-                      <div className="relative h-48 sm:h-56">
+                      <div className="relative h-52 sm:h-60 overflow-hidden">
                         <Image
                           src={item.image_url}
                           alt={item.titre}
                           fill
-                          className="object-cover"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <span
-                          className={`absolute top-3 left-3 px-3 py-1 text-xs font-bold ${badge.bg} ${badge.text} rounded-full capitalize`}
+                          className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold ${badge.bg} ${badge.text} rounded-full capitalize`}
                         >
                           {item.categorie}
                         </span>
                       </div>
                     )}
-                    <div className="p-5">
-                      <h3 className="text-lg font-bold text-green-900">
+                    <div className="p-6">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {new Date(item.date_publication).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                      <h3 className="text-lg font-bold text-green-900 leading-snug">
                         {item.titre}
                       </h3>
                       {item.texte && (
-                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                           {item.texte}
                         </p>
                       )}
                       {item.cta_label && item.cta_url && (
                         <Link
                           href={item.cta_url}
-                          className="inline-block mt-3 text-sm font-bold text-green-600 hover:text-green-800 transition-colors"
+                          className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-green-600 hover:text-green-800 transition-colors"
                         >
-                          {item.cta_label} &rarr;
+                          {item.cta_label}
+                          <ArrowRight size={14} />
                         </Link>
                       )}
                     </div>
@@ -209,29 +226,32 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
 
       {/* RÉSULTATS */}
       {resultats.length > 0 && (
-        <section className="py-16 sm:py-20 bg-white">
+        <section className="py-20 sm:py-28 bg-white">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center reveal">
-              <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
-                Derniers résultats
+              <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
+                Comp&eacute;titions
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-green-900">
+                Derniers r&eacute;sultats
               </h2>
-              <p className="mt-2 text-muted-foreground">
-                Les performances récentes du TCH
+              <p className="mt-3 text-muted-foreground max-w-md mx-auto">
+                Les performances r&eacute;centes de nos &eacute;quipes
               </p>
             </div>
-            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {resultats.map((r, i) => {
                 const style = resultatStyle[r.resultat] ?? resultatStyle.draw;
                 return (
                   <div
                     key={r.id}
-                    className={`reveal d${Math.min(i + 1, 4)} bg-off-white rounded-xl p-4 card-hover`}
+                    className={`reveal d${Math.min(i + 1, 4)} bg-[#f7f5f0] rounded-2xl p-5 card-hover border border-gray-100`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-muted-foreground uppercase">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         {r.competition}
                       </span>
-                      <span className={`flex items-center gap-1 text-xs font-bold ${style.color}`}>
+                      <span className={`flex items-center gap-1 text-xs font-semibold ${style.color}`}>
                         {style.icon} {style.label}
                       </span>
                     </div>
@@ -246,13 +266,13 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         <span className="text-2xl font-bold text-green-900">
                           {r.score_tch}
                         </span>
-                        <span className="mx-1 text-muted-foreground">-</span>
+                        <span className="mx-1.5 text-muted-foreground">-</span>
                         <span className="text-2xl font-bold text-muted-foreground">
                           {r.score_adv}
                         </span>
                       </div>
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
+                    <p className="mt-3 text-xs text-muted-foreground">
                       {new Date(r.date).toLocaleDateString("fr-FR", {
                         day: "numeric",
                         month: "long",
@@ -263,12 +283,13 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                 );
               })}
             </div>
-            <div className="text-center mt-8 reveal">
+            <div className="text-center mt-10 reveal">
               <Link
                 href="/resultats"
-                className="inline-block px-6 py-3 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors text-sm"
               >
-                Tous les résultats
+                Tous les r&eacute;sultats
+                <ArrowRight size={16} />
               </Link>
             </div>
           </div>
@@ -276,46 +297,50 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       )}
 
       {/* TERRAINS */}
-      <section className="py-16 sm:py-20">
+      <section className="py-20 sm:py-28">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center reveal">
-            <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
+            <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
+              Nos infrastructures
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-green-900">
               Nos installations
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              6 terrains indoor &amp; outdoor à votre disposition
+            <p className="mt-3 text-muted-foreground max-w-md mx-auto">
+              6 terrains indoor &amp; outdoor &agrave; votre disposition
             </p>
           </div>
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {terrains.map((court, i) => (
               <div
                 key={court.id}
-                className={`reveal d${Math.min(i + 1, 4)} bg-white rounded-xl p-5 card-hover shadow-sm`}
+                className={`reveal d${Math.min(i + 1, 4)} bg-white rounded-2xl p-6 card-hover shadow-sm border border-gray-100`}
               >
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-green-900">{court.nom}</h3>
                   <span
-                    className={`text-xs font-bold px-2 py-1 rounded-full ${
+                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
                       court.type === "indoor"
                         ? "bg-green-600/10 text-green-600"
-                        : "bg-yellow-400/30 text-yellow-700"
+                        : "bg-[#f6ca73]/30 text-green-900"
                     }`}
                   >
                     {court.type === "indoor" ? "Indoor" : "Outdoor"}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-muted-foreground">
                   {court.surface}
                 </p>
               </div>
             ))}
           </div>
-          <div className="text-center mt-8 reveal">
+          <div className="text-center mt-10 reveal">
             <Link
               href="/reservation"
-              className="inline-block px-6 py-3 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors text-sm"
             >
-              Réserver un terrain
+              R&eacute;server un terrain
+              <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -323,12 +348,12 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
 
       {/* SPONSORS */}
       {sponsors.length > 0 && (
-        <section className="py-12 bg-white border-t border-b">
+        <section className="py-14 bg-white border-t border-gray-100">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-xs font-bold text-muted-foreground uppercase tracking-wider mb-6 reveal">
+            <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-8 reveal">
               Nos partenaires
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-8 reveal d1">
+            <div className="flex flex-wrap justify-center items-center gap-10 reveal d1">
               {sponsors.map((s) => (
                 <div
                   key={s.id}
@@ -340,10 +365,10 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                       alt={s.nom}
                       width={120}
                       height={48}
-                      className="h-10 w-auto opacity-60 hover:opacity-100 transition-opacity"
+                      className="h-10 w-auto opacity-50 hover:opacity-100 transition-opacity duration-300"
                     />
                   ) : (
-                    <span className="text-sm font-bold text-muted-foreground/60 hover:text-muted-foreground transition-colors px-4 py-2">
+                    <span className="text-sm font-medium text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-300 px-4 py-2">
                       {s.nom}
                     </span>
                   )}
@@ -355,28 +380,41 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       )}
 
       {/* CTA */}
-      <section className="py-16 sm:py-20 bg-green-900 text-white">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
-          <h2 className="text-3xl sm:text-4xl font-bold">
-            Rejoignez le <span className="text-yellow-400">TCH</span>
-          </h2>
-          <p className="mt-3 text-lg text-white/80 max-w-xl mx-auto">
-            Depuis 1927, le Tennis Club Halluin rassemble des passionnés de
-            tous niveaux. Venez nous rencontrer !
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link
-              href="/contact"
-              className="px-6 py-3 rounded-lg font-extrabold bg-yellow-400 text-green-900 hover:bg-yellow-300 btn-primary transition-colors"
-            >
-              Nous contacter
-            </Link>
-            <Link
-              href="/connexion"
-              className="px-6 py-3 rounded-lg font-bold bg-white/10 text-white hover:bg-white/20 transition-colors border border-white/20"
-            >
-              Se connecter
-            </Link>
+      <section className="relative py-24 sm:py-32 bg-green-900 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <Image
+            src="/assets/photos/club/hero-indoor-new.jpeg"
+            alt=""
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-2xl mx-auto reveal">
+            <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-3">
+              Rejoignez-nous
+            </p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+              Rejoignez le <span className="text-[#f6ca73]">TCH</span>
+            </h2>
+            <p className="mt-4 text-lg text-white/70 max-w-lg mx-auto leading-relaxed">
+              Depuis 1927, le Tennis Club Halluin rassemble des passionn&eacute;s de
+              tous niveaux. Venez nous rencontrer !
+            </p>
+            <div className="mt-10 flex flex-wrap justify-center gap-4">
+              <Link
+                href="/contact"
+                className="px-7 py-3.5 rounded-full font-semibold bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] btn-primary transition-colors text-sm"
+              >
+                Nous contacter
+              </Link>
+              <Link
+                href="/connexion"
+                className="px-7 py-3.5 rounded-full font-semibold text-white hover:bg-white/10 transition-colors border border-white/30 text-sm"
+              >
+                Se connecter
+              </Link>
+            </div>
           </div>
         </div>
       </section>
