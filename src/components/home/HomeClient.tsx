@@ -69,7 +69,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
         <div className="bg-green-600 text-white overflow-hidden">
           <div className="ticker-track flex whitespace-nowrap animate-ticker" style={{ width: "max-content" }}>
             {[...ticker, ...ticker, ...ticker, ...ticker].map((item, i) => (
-              <span key={i} className="inline-block px-8 py-2 text-xs font-medium tracking-wide">
+              <span key={i} className="inline-block px-8 py-1 text-[11px] font-medium tracking-wide">
                 {item.texte}
                 <span className="ml-6 text-[#f6ca73]">&bull;</span>
               </span>
