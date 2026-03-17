@@ -173,7 +173,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
               </p>
             </div>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-              {news.map((item, i) => {
+              {news.slice(0, 4).map((item, i) => {
                 const badge = categorieBadge[item.categorie] ?? categorieBadge.club;
                 return (
                   <Link

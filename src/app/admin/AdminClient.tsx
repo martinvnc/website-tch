@@ -115,7 +115,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
   // News creation
   const [showNewsForm, setShowNewsForm] = useState(false);
-  const [newsForm, setNewsForm] = useState({ titre: "", categorie: "club", cta_label: "", cta_url: "" });
+  const [newsForm, setNewsForm] = useState({ titre: "", categorie: "club", cta_label: "", cta_url: "", date_publication: new Date().toISOString().split("T")[0] });
   const [creatingNews, setCreatingNews] = useState(false);
   const [newsError, setNewsError] = useState<string | null>(null);
   const [togglingNews, setTogglingNews] = useState<string | null>(null);
@@ -350,7 +350,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
         cta_label: newsForm.cta_label.trim() || null,
         cta_url: newsForm.cta_url.trim() || null,
         published: false,
-        date_publication: new Date().toISOString().split("T")[0],
+        date_publication: newsForm.date_publication,
       })
       .select()
       .single();
@@ -358,7 +358,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       setNewsError(error.message);
     } else if (data) {
       setNews((prev) => [data, ...prev]);
-      setNewsForm({ titre: "", categorie: "club", cta_label: "", cta_url: "" });
+      setNewsForm({ titre: "", categorie: "club", cta_label: "", cta_url: "", date_publication: new Date().toISOString().split("T")[0] });
       if (editorRef.current) editorRef.current.innerHTML = "";
       clearAllImages();
       setShowNewsForm(false);
@@ -395,6 +395,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       categorie: item.categorie,
       cta_label: item.cta_label || "",
       cta_url: item.cta_url || "",
+      date_publication: item.date_publication,
     });
     // Load existing images
     const existingUrls = parseImageUrls(item.image_url);
@@ -409,7 +410,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
   function cancelEdit() {
     setEditingNews(null);
-    setNewsForm({ titre: "", categorie: "club", cta_label: "", cta_url: "" });
+    setNewsForm({ titre: "", categorie: "club", cta_label: "", cta_url: "", date_publication: new Date().toISOString().split("T")[0] });
     if (editorRef.current) editorRef.current.innerHTML = "";
     clearAllImages();
     setShowNewsForm(false);
@@ -442,6 +443,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
         image_url: imageUrlField,
         cta_label: newsForm.cta_label.trim() || null,
         cta_url: newsForm.cta_url.trim() || null,
+        date_publication: newsForm.date_publication,
       })
       .eq("id", editingNews.id)
       .select()
@@ -744,6 +746,17 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                       onChange={(e) => setNewsForm({ ...newsForm, titre: e.target.value })}
                       placeholder="Titre de l&apos;actualité"
                       className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                    />
+                  </div>
+
+                  {/* DATE */}
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Date de publication</label>
+                    <input
+                      type="date"
+                      value={newsForm.date_publication}
+                      onChange={(e) => setNewsForm({ ...newsForm, date_publication: e.target.value })}
+                      className="w-full sm:w-auto px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
                     />
                   </div>
 
