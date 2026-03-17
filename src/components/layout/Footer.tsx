@@ -10,11 +10,11 @@ export function Footer() {
           {/* COL 1 — Logo + description */}
           <div className="space-y-4">
             <Image
-              src="/assets/logos/logo-blanc-footer.png"
+              src="/assets/logos/logo-blanc-complet.png"
               alt="Tennis Club Halluin"
-              width={80}
-              height={80}
-              className="h-16 w-auto"
+              width={120}
+              height={120}
+              className="h-20 w-auto"
             />
             <p className="text-sm text-white/70 leading-relaxed">
               L&apos;excellence du tennis au c&oelig;ur d&apos;Halluin. Un cadre unique pour votre passion, ouvert &agrave; tous.
