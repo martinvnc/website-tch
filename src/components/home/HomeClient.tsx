@@ -99,7 +99,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
           />
           <div className="absolute inset-0 bg-gradient-to-r from-green-900/70 via-green-900/50 to-transparent" />
         </div>
-        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 w-full">
+        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 w-full">
           <div className="max-w-2xl">
             <p className="text-[#f6ca73] font-medium tracking-widest uppercase text-sm mb-4 reveal">
               Depuis 1927
