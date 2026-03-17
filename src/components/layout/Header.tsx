@@ -116,7 +116,7 @@ export function Header() {
                 <>
                   <Link
                     href="/connexion"
-                    className="px-5 py-2 rounded-full text-sm border border-green-900 text-green-900 hover:text-green-600 hover:border-green-600 transition-colors"
+                    className="px-4 py-1.5 rounded-full text-xs border border-green-900 text-green-900 hover:text-green-600 hover:border-green-600 transition-colors"
                   >
                     Se connecter
                   </Link>
@@ -182,7 +182,7 @@ export function Header() {
                 <Link
                   href="/connexion"
                   onClick={() => setMobileOpen(false)}
-                  className="px-5 py-3 rounded-full text-sm border border-green-900 text-green-900 text-center hover:text-green-600 hover:border-green-600 transition-colors"
+                  className="px-4 py-2.5 rounded-full text-xs border border-green-900 text-green-900 text-center hover:text-green-600 hover:border-green-600 transition-colors"
                 >
                   Se connecter
                 </Link>
