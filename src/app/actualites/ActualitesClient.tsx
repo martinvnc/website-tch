@@ -87,7 +87,8 @@ export function ActualitesClient({ news }: { news: News[] }) {
                 return (
                   <div
                     key={item.id}
-                    className={`reveal d${Math.min(i % 3 + 1, 4)} group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100`}
+                    className="group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100 animate-fade-in"
+                    style={{ animationDelay: `${(i % 3) * 100}ms` }}
                   >
                     {item.image_url && (
                       <div className="relative h-48 sm:h-52 overflow-hidden">
