@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useReveal } from "@/hooks/useReveal";
-import { Trophy, Minus, X, ArrowRight, Calendar, MapPin, Users } from "lucide-react";
+import { Trophy, Minus, X, ArrowRight } from "lucide-react";
 
 type News = {
   id: string;
@@ -129,22 +129,16 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
               </Link>
             </div>
 
-            {/* Stat chips */}
-            <div className="mt-14 flex flex-wrap gap-4">
+            {/* Stats */}
+            <div className="mt-12 flex flex-wrap gap-8 reveal d4">
               {[
-                { value: "97", label: "ann\u00e9es d\u2019histoire", icon: <Calendar size={18} /> },
-                { value: "273", label: "licenci\u00e9s", icon: <Users size={18} /> },
-                { value: "6", label: "terrains", icon: <MapPin size={18} /> },
+                { value: "97 ans", label: "d\u2019histoire" },
+                { value: "273", label: "licenci\u00e9s" },
+                { value: "6", label: "terrains" },
               ].map((stat, i) => (
-                <div
-                  key={i}
-                  className={`reveal d${i + 1} flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-5 py-3`}
-                >
-                  <span className="text-[#f6ca73]">{stat.icon}</span>
-                  <div>
-                    <span className="text-xl font-bold text-white">{stat.value}</span>
-                    <span className="ml-1.5 text-xs text-white/60">{stat.label}</span>
-                  </div>
+                <div key={i} className="text-left">
+                  <span className="text-2xl font-bold text-[#f6ca73]">{stat.value}</span>
+                  <span className="ml-1.5 text-sm text-white/60">{stat.label}</span>
                 </div>
               ))}
             </div>
