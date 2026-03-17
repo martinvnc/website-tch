@@ -160,7 +160,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* NEWS */}
       {news.length > 0 && (
         <section className="pt-12 pb-12 sm:pt-14 sm:pb-14">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center reveal">
               <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
                 Restez inform&eacute;s
