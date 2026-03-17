@@ -94,12 +94,12 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
             src="/assets/photos/club/hero-indoor-new.jpeg"
             alt="Courts du Tennis Club Halluin"
             fill
-            className="object-cover opacity-25"
+            className="object-cover opacity-30"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-green-900/70 via-green-900/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-green-900/60 via-green-900/40 to-green-900/80" />
         </div>
-        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 w-full">
+        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-28 sm:py-36 lg:py-44 w-full">
           <div className="text-center max-w-3xl mx-auto">
             <p className="text-[#f6ca73] font-medium tracking-widest uppercase text-sm mb-4 reveal">
               Depuis 1927
@@ -128,6 +128,9 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                 D&eacute;couvrir le club
               </Link>
             </div>
+            <p className="mt-10 text-xs text-white/40 tracking-wider uppercase reveal d4">
+              Indoor &bull; Outdoor &bull; Comp&eacute;titions &bull; Stages &bull; &Eacute;cole de tennis
+            </p>
           </div>
         </div>
       </section>
