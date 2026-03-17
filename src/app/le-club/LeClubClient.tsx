@@ -34,7 +34,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
             priority
           />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl">
             Le <span className="text-yellow-400">Club</span>
           </h1>
@@ -68,7 +68,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
 
       {/* PRÉSENTATION */}
       <section className="py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div className="reveal">
               <h2 className="text-3xl sm:text-4xl font-bold text-green-600">
@@ -137,7 +137,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
 
       {/* TERRAINS */}
       <section className="py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl sm:text-4xl font-bold text-green-600 text-center reveal">
             Nos terrains
           </h2>
@@ -169,7 +169,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
       {/* COMITÉ */}
       {comite.length > 0 && (
         <section className="py-16 sm:py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl sm:text-4xl font-bold text-green-600 text-center reveal">
               Le comité directeur
             </h2>
@@ -207,7 +207,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
       {/* GALERIE */}
       {galerie.length > 0 && (
         <section className="py-16 sm:py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl sm:text-4xl font-bold text-green-600 text-center reveal">
               Galerie photos
             </h2>
@@ -233,7 +233,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
       {/* SPONSORS */}
       {sponsors.length > 0 && (
         <section className="py-12 bg-white border-t">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-center text-xs font-bold text-muted-foreground uppercase tracking-wider mb-6 reveal">
               Nos partenaires
             </p>

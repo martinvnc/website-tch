@@ -160,7 +160,7 @@ export function ReservationClient({ terrains, isAuthenticated }: Props) {
     <>
       {/* HERO */}
       <section className="bg-green-900 text-white py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-display text-4xl sm:text-5xl">
             <span className="text-yellow-400">Réservation</span>
           </h1>
@@ -171,7 +171,7 @@ export function ReservationClient({ terrains, isAuthenticated }: Props) {
       </section>
 
       <section className="py-8 sm:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Terrain selector */}
           <div className="reveal flex flex-wrap gap-2 mb-6">
             {terrains.map((t) => (

@@ -44,7 +44,7 @@ export default function ContactPage() {
     <>
       {/* HERO */}
       <section className="bg-green-900 text-white py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-display text-4xl sm:text-5xl">
             <span className="text-yellow-400">Contact</span>
           </h1>
