@@ -116,6 +116,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [showNewsForm, setShowNewsForm] = useState(false);
   const [newsForm, setNewsForm] = useState({ titre: "", texte: "", categorie: "club", image_url: "", cta_label: "", cta_url: "" });
   const [creatingNews, setCreatingNews] = useState(false);
+  const [newsError, setNewsError] = useState<string | null>(null);
   const [togglingNews, setTogglingNews] = useState<string | null>(null);
   const [deletingNews, setDeletingNews] = useState<string | null>(null);
 
@@ -174,6 +175,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   async function createNewsItem() {
     if (!newsForm.titre.trim()) return;
     setCreatingNews(true);
+    setNewsError(null);
     const { data, error } = await supabase
       .from("news")
       .insert({
@@ -188,7 +190,9 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       })
       .select()
       .single();
-    if (!error && data) {
+    if (error) {
+      setNewsError(error.message);
+    } else if (data) {
       setNews((prev) => [data, ...prev]);
       setNewsForm({ titre: "", texte: "", categorie: "club", image_url: "", cta_label: "", cta_url: "" });
       setShowNewsForm(false);
@@ -551,6 +555,9 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                       />
                     </div>
                   </div>
+                  {newsError && (
+                    <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{newsError}</p>
+                  )}
                   <button
                     onClick={createNewsItem}
                     disabled={!newsForm.titre.trim() || creatingNews}
