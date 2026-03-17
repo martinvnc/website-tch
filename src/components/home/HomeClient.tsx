@@ -145,16 +145,6 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                   priority
                 />
               </div>
-              <div className="flex gap-4 mt-5">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-white/20">
-                  <p className="text-3xl font-bold text-[#f6ca73]">273</p>
-                  <p className="text-sm text-white/80">licenci&eacute;s</p>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-white/20">
-                  <p className="text-3xl font-bold text-[#f6ca73]">6</p>
-                  <p className="text-sm text-white/80">terrains</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
