@@ -131,7 +131,7 @@ export function ActualitesClient({ news }: { news: News[] }) {
                       </h3>
                       {item.texte && (
                         <div
-                          className="mt-2 text-sm text-muted-foreground line-clamp-3 leading-relaxed prose prose-sm max-w-none"
+                          className="mt-2 text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ __html: item.texte }}
                         />
                       )}

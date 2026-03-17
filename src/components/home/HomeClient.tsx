@@ -176,9 +176,10 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
               {news.map((item, i) => {
                 const badge = categorieBadge[item.categorie] ?? categorieBadge.club;
                 return (
-                  <div
+                  <Link
                     key={item.id}
-                    className={`reveal d${Math.min(i + 1, 4)} group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100`}
+                    href="/actualites"
+                    className={`reveal d${Math.min(i + 1, 4)} group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100 block`}
                   >
                     {item.image_url && (() => {
                       const images = parseImageUrls(item.image_url);
@@ -200,26 +201,21 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                           year: "numeric",
                         })}
                       </p>
-                      <h3 className="text-lg font-bold text-green-900 leading-snug">
+                      <h3 className="text-lg font-bold text-green-900 leading-snug group-hover:text-green-600 transition-colors">
                         {item.titre}
                       </h3>
                       {item.texte && (
                         <div
-                          className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed prose prose-sm max-w-none"
+                          className="mt-2 text-sm text-muted-foreground line-clamp-3 leading-relaxed prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ __html: item.texte }}
                         />
                       )}
-                      {item.cta_label && item.cta_url && (
-                        <Link
-                          href={item.cta_url}
-                          className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-green-600 hover:text-green-800 transition-colors"
-                        >
-                          {item.cta_label}
-                          <ArrowRight size={14} />
-                        </Link>
-                      )}
+                      <span className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-green-600 group-hover:text-green-800 transition-colors">
+                        Lire la suite
+                        <ArrowRight size={14} />
+                      </span>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
