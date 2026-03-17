@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Shield } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupaUser } from "@supabase/supabase-js";
 
@@ -21,13 +21,24 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<SupaUser | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
 
+    const fetchRole = async (userId: string) => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+      setIsAdmin(data?.role === "admin");
+    };
+
     // getSession est synchrone (cache local) → état immédiat
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) fetchRole(session.user.id);
     });
 
     // getUser valide côté serveur → mise à jour si besoin
@@ -39,6 +50,8 @@ export function Header() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) fetchRole(session.user.id);
+      else setIsAdmin(false);
     });
 
     return () => subscription.unsubscribe();
@@ -127,6 +140,16 @@ export function Header() {
                           <User size={16} />
                           Mon compte
                         </Link>
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setDropdownOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-green-900 hover:bg-green-600/10 transition-colors"
+                          >
+                            <Shield size={16} />
+                            Administration
+                          </Link>
+                        )}
                         <button
                           onClick={handleSignOut}
                           className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -213,6 +236,16 @@ export function Header() {
                 >
                   Mon compte
                 </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm text-green-900 hover:bg-green-600/10 transition-colors"
+                  >
+                    <Shield size={16} />
+                    Administration
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     setMobileOpen(false);
