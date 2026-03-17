@@ -49,6 +49,9 @@ type NewsItem = {
   titre: string;
   texte: string | null;
   categorie: string;
+  image_url: string | null;
+  cta_label: string | null;
+  cta_url: string | null;
   published: boolean;
   date_publication: string;
 };
@@ -84,7 +87,12 @@ const statutLabels: Record<string, string> = {
   archive: "Archivé",
 };
 
-const newsCategories = ["info", "competition", "animation", "club", "jeunes"];
+const newsCategories = [
+  { value: "club", label: "Club" },
+  { value: "tournoi", label: "Tournoi" },
+  { value: "soiree", label: "Soirée" },
+  { value: "stage", label: "Stage" },
+];
 
 export function AdminClient({ stats, codes: initialCodes, recentTickets: initialTickets, recentReservations, news: initialNews }: Props) {
   useReveal();
@@ -106,7 +114,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
   // News creation
   const [showNewsForm, setShowNewsForm] = useState(false);
-  const [newsForm, setNewsForm] = useState({ titre: "", texte: "", categorie: "info" });
+  const [newsForm, setNewsForm] = useState({ titre: "", texte: "", categorie: "club", image_url: "", cta_label: "", cta_url: "" });
   const [creatingNews, setCreatingNews] = useState(false);
   const [togglingNews, setTogglingNews] = useState<string | null>(null);
   const [deletingNews, setDeletingNews] = useState<string | null>(null);
@@ -172,6 +180,9 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
         titre: newsForm.titre.trim(),
         texte: newsForm.texte.trim() || null,
         categorie: newsForm.categorie,
+        image_url: newsForm.image_url.trim() || null,
+        cta_label: newsForm.cta_label.trim() || null,
+        cta_url: newsForm.cta_url.trim() || null,
         published: false,
         date_publication: new Date().toISOString().split("T")[0],
       })
@@ -179,7 +190,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       .single();
     if (!error && data) {
       setNews((prev) => [data, ...prev]);
-      setNewsForm({ titre: "", texte: "", categorie: "info" });
+      setNewsForm({ titre: "", texte: "", categorie: "club", image_url: "", cta_label: "", cta_url: "" });
       setShowNewsForm(false);
     }
     setCreatingNews(false);
@@ -475,7 +486,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
               {showNewsForm && (
                 <div className="bg-white rounded-xl p-5 shadow-sm space-y-3">
                   <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Titre</label>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Titre *</label>
                     <input
                       type="text"
                       value={newsForm.titre}
@@ -494,17 +505,51 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                       className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm resize-none"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Catégorie</label>
-                    <select
-                      value={newsForm.categorie}
-                      onChange={(e) => setNewsForm({ ...newsForm, categorie: e.target.value })}
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
-                    >
-                      {newsCategories.map((cat) => (
-                        <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Catégorie</label>
+                      <select
+                        value={newsForm.categorie}
+                        onChange={(e) => setNewsForm({ ...newsForm, categorie: e.target.value })}
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      >
+                        {newsCategories.map((cat) => (
+                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Image URL</label>
+                      <input
+                        type="text"
+                        value={newsForm.image_url}
+                        onChange={(e) => setNewsForm({ ...newsForm, image_url: e.target.value })}
+                        placeholder="/assets/photos/..."
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Bouton CTA — Texte</label>
+                      <input
+                        type="text"
+                        value={newsForm.cta_label}
+                        onChange={(e) => setNewsForm({ ...newsForm, cta_label: e.target.value })}
+                        placeholder="ex: En savoir plus"
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Bouton CTA — Lien</label>
+                      <input
+                        type="text"
+                        value={newsForm.cta_url}
+                        onChange={(e) => setNewsForm({ ...newsForm, cta_url: e.target.value })}
+                        placeholder="ex: /le-club ou https://..."
+                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      />
+                    </div>
                   </div>
                   <button
                     onClick={createNewsItem}
@@ -517,12 +562,19 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                 </div>
               )}
 
+              {news.length === 0 && (
+                <p className="text-center text-muted-foreground py-10">Aucune actualité. Créez-en une !</p>
+              )}
+
               {news.map((n) => (
                 <div key={n.id} className="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between">
                   <div className="flex-1 min-w-0 mr-3">
                     <p className="font-bold text-green-900 truncate">{n.titre}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {n.categorie} · {new Date(n.date_publication).toLocaleDateString("fr-FR")}
+                      <span className="inline-block px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-semibold mr-1">{n.categorie}</span>
+                      {new Date(n.date_publication).toLocaleDateString("fr-FR")}
+                      {n.image_url && <span className="ml-1">· 🖼️</span>}
+                      {n.cta_label && <span className="ml-1">· 🔗 {n.cta_label}</span>}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
