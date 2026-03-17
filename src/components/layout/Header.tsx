@@ -60,64 +60,75 @@ export function Header() {
             />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1 ml-6">
+          <nav className="hidden md:flex items-center gap-1 ml-6 flex-1">
             {navLinks.map((link) => {
               const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-4 py-2 text-sm text-green-900 transition-colors border-b-2 hover:border-[#f6ca73] ${isActive ? "border-[#f6ca73]" : "border-transparent"}`}
+                  className="group relative px-3 py-1 text-sm text-green-900"
                 >
                   {link.label}
+                  <span className={`absolute left-3 right-3 bottom-0 h-[2px] bg-[#f6ca73] transition-transform duration-300 origin-left ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} />
                 </Link>
               );
             })}
 
-            {user ? (
-              <div className="relative ml-auto">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-green-600/10 text-green-600 hover:bg-green-600/20 transition-colors"
-                >
-                  <User size={16} />
-                  {user.user_metadata?.prenom || "Mon compte"}
-                </button>
+            <div className="flex items-center gap-3 ml-auto">
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm bg-green-600/10 text-green-600 hover:bg-green-600/20 transition-colors"
+                  >
+                    <User size={16} />
+                    {user.user_metadata?.prenom || "Mon compte"}
+                  </button>
 
-                {dropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setDropdownOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50 py-1">
-                      <Link
-                        href="/mon-compte"
+                  {dropdownOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-green-900 hover:bg-green-600/10 transition-colors"
-                      >
-                        <User size={16} />
-                        Mon compte
-                      </Link>
-                      <button
-                        onClick={handleSignOut}
-                        className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <LogOut size={16} />
-                        Déconnexion
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <Link
-                href="/connexion"
-                className="ml-auto px-5 py-2 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors"
-              >
-                Connexion
-              </Link>
-            )}
+                      />
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50 py-1">
+                        <Link
+                          href="/mon-compte"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-green-900 hover:bg-green-600/10 transition-colors"
+                        >
+                          <User size={16} />
+                          Mon compte
+                        </Link>
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <LogOut size={16} />
+                          Déconnexion
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/connexion"
+                    className="px-5 py-2 rounded-full text-sm border border-green-900 text-green-900 hover:bg-green-900 hover:text-white transition-colors"
+                  >
+                    Se connecter
+                  </Link>
+                  <Link
+                    href="/connexion?tab=register"
+                    className="px-5 py-2 rounded-full text-sm bg-green-600 text-white hover:bg-green-800 transition-colors"
+                  >
+                    S&apos;inscrire
+                  </Link>
+                </>
+              )}
+            </div>
           </nav>
 
           <button
@@ -167,13 +178,22 @@ export function Header() {
                 </button>
               </>
             ) : (
-              <Link
-                href="/connexion"
-                onClick={() => setMobileOpen(false)}
-                className="mt-2 px-5 py-3 rounded-lg text-sm font-bold bg-green-600 text-white text-center hover:bg-green-800 transition-colors"
-              >
-                Connexion
-              </Link>
+              <div className="flex flex-col gap-2 mt-2">
+                <Link
+                  href="/connexion"
+                  onClick={() => setMobileOpen(false)}
+                  className="px-5 py-3 rounded-full text-sm border border-green-900 text-green-900 text-center hover:bg-green-900 hover:text-white transition-colors"
+                >
+                  Se connecter
+                </Link>
+                <Link
+                  href="/connexion?tab=register"
+                  onClick={() => setMobileOpen(false)}
+                  className="px-5 py-3 rounded-full text-sm bg-green-600 text-white text-center hover:bg-green-800 transition-colors"
+                >
+                  S&apos;inscrire
+                </Link>
+              </div>
             )}
           </nav>
         </div>

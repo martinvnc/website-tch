@@ -35,7 +35,8 @@ function ConnexionPage() {
   const redirectTo = searchParams.get("redirect") || "";
   const message = searchParams.get("message") || "";
 
-  const [tab, setTab] = useState<"login" | "register">("login");
+  const initialTab = searchParams.get("tab") === "register" ? "register" : "login";
+  const [tab, setTab] = useState<"login" | "register">(initialTab);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
