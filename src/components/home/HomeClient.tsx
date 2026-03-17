@@ -97,7 +97,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
             className="object-cover opacity-25"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-900/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-green-900/70 via-green-900/50 to-transparent" />
         </div>
         <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 w-full">
           <div className="max-w-2xl">
