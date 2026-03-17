@@ -201,7 +201,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                           year: "numeric",
                         })}
                       </p>
-                      <h3 className="text-lg font-bold text-green-900 leading-snug group-hover:text-green-600 transition-colors">
+                      <h3 className="text-lg font-bold text-green-900 leading-snug">
                         {item.titre}
                       </h3>
                       {item.texte && (
@@ -210,10 +210,12 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                           dangerouslySetInnerHTML={{ __html: item.texte }}
                         />
                       )}
-                      <span className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-green-600 group-hover:text-green-800 transition-colors">
-                        Lire la suite
-                        <ArrowRight size={14} />
-                      </span>
+                      {item.cta_label && item.cta_url && (
+                        <span className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-green-600 hover:text-green-800 transition-colors">
+                          {item.cta_label}
+                          <ArrowRight size={14} />
+                        </span>
+                      )}
                     </div>
                   </Link>
                 );
