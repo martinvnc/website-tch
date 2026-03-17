@@ -67,22 +67,13 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* TICKER */}
       {ticker.length > 0 && (
         <div className="bg-gradient-to-r from-green-900 via-green-800 to-green-900 text-white overflow-hidden border-b border-white/10">
-          <div className="ticker-track flex whitespace-nowrap animate-ticker">
-            {[...ticker, ...ticker].map((item, i) => {
-              const icons: Record<string, string> = {
-                "Tous niveaux": "📊",
-                "3 Terrains intérieurs": "🏠",
-                "3 Terrains extérieurs": "☀️",
-                "Club familial": "👨‍👩‍👧‍👦",
-              };
-              const icon = icons[item.texte] ?? "🎾";
-              return (
-                <span key={i} className="inline-flex items-center gap-2 px-8 py-2 text-xs font-medium tracking-wide">
-                  <span>{icon}</span>
-                  {item.texte}
-                </span>
-              );
-            })}
+          <div className="ticker-track flex whitespace-nowrap animate-ticker" style={{ width: "max-content" }}>
+            {[...ticker, ...ticker, ...ticker, ...ticker].map((item, i) => (
+              <span key={i} className="inline-block px-8 py-2 text-xs font-medium tracking-wide">
+                {item.texte}
+                <span className="ml-6 text-[#f6ca73]">&bull;</span>
+              </span>
+            ))}
           </div>
           <style jsx>{`
             @keyframes ticker {
