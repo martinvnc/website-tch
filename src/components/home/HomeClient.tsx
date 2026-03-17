@@ -135,7 +135,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
             </div>
 
             {/* Photo */}
-            <div className="relative reveal d2">
+            <div className="reveal d2">
               <div className="relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl">
                 <Image
                   src="/assets/photos/club/hero-indoor-new.jpeg"
@@ -145,13 +145,15 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                   priority
                 />
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-[#f6ca73] text-green-900 rounded-2xl px-5 py-3 shadow-lg">
-                <p className="text-2xl font-bold">273</p>
-                <p className="text-xs font-medium">licenci&eacute;s</p>
-              </div>
-              <div className="absolute -top-4 -right-4 bg-white text-green-900 rounded-2xl px-5 py-3 shadow-lg">
-                <p className="text-2xl font-bold">6</p>
-                <p className="text-xs font-medium">terrains</p>
+              <div className="flex gap-4 mt-5">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-white/20">
+                  <p className="text-3xl font-bold text-[#f6ca73]">273</p>
+                  <p className="text-sm text-white/80">licenci&eacute;s</p>
+                </div>
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-white/20">
+                  <p className="text-3xl font-bold text-[#f6ca73]">6</p>
+                  <p className="text-sm text-white/80">terrains</p>
+                </div>
               </div>
             </div>
           </div>
