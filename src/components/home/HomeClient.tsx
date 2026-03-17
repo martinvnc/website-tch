@@ -103,8 +103,8 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
           />
           <div className="absolute inset-0 bg-green-900/60" />
         </div>
-        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             {/* Texte */}
             <div>
               <p className="text-[#f6ca73] font-medium tracking-widest uppercase text-sm mb-4 reveal">
@@ -141,7 +141,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
 
             {/* Photo */}
             <div className="reveal d2">
-              <div className="relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl">
+              <div className="relative rounded-2xl overflow-hidden aspect-[16/10] shadow-2xl">
                 <Image
                   src="/assets/photos/club/hero-indoor-new.jpeg"
                   alt="Courts du Tennis Club Halluin"
