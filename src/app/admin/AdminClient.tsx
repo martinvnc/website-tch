@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Users, Calendar, MessageSquare, Key, Newspaper, BarChart3,
   GraduationCap, Loader2, Plus, X, ChevronDown, Eye, Trash2, ToggleLeft, ToggleRight,
-  Bold, Italic, Underline, Upload, ImageIcon, Pencil, ArrowUp, ArrowDown,
+  Bold, Italic, Underline, Upload, ImageIcon, Pencil,
 } from "lucide-react";
 import { parseImageUrls } from "@/lib/utils";
 
@@ -235,14 +235,40 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     setNewsImages((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function moveImage(index: number, direction: -1 | 1) {
+  // Drag-to-reorder state
+  const dragIndexRef = useRef<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  function handleThumbDragStart(idx: number) {
+    dragIndexRef.current = idx;
+  }
+
+  function handleThumbDragOver(e: React.DragEvent, idx: number) {
+    e.preventDefault();
+    if (dragIndexRef.current === null || dragIndexRef.current === idx) return;
+    setDragOverIndex(idx);
+  }
+
+  function handleThumbDrop(idx: number) {
+    const from = dragIndexRef.current;
+    if (from === null || from === idx) {
+      dragIndexRef.current = null;
+      setDragOverIndex(null);
+      return;
+    }
     setNewsImages((prev) => {
       const arr = [...prev];
-      const target = index + direction;
-      if (target < 0 || target >= arr.length) return arr;
-      [arr[index], arr[target]] = [arr[target], arr[index]];
+      const [moved] = arr.splice(from, 1);
+      arr.splice(idx, 0, moved);
       return arr;
     });
+    dragIndexRef.current = null;
+    setDragOverIndex(null);
+  }
+
+  function handleThumbDragEnd() {
+    dragIndexRef.current = null;
+    setDragOverIndex(null);
   }
 
   function clearAllImages() {
@@ -777,49 +803,39 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                       Photos {newsImages.length > 0 && <span className="text-green-600">({newsImages.length})</span>}
                     </label>
 
-                    {/* Thumbnails grid with reorder */}
+                    {/* Thumbnails grid — drag to reorder */}
                     {newsImages.length > 0 && (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                         {newsImages.map((img, idx) => (
-                          <div key={idx} className="relative rounded-lg overflow-hidden border border-gray-200 group">
+                          <div
+                            key={idx}
+                            draggable
+                            onDragStart={() => handleThumbDragStart(idx)}
+                            onDragOver={(e) => handleThumbDragOver(e, idx)}
+                            onDrop={() => handleThumbDrop(idx)}
+                            onDragEnd={handleThumbDragEnd}
+                            className={`relative rounded-lg overflow-hidden border-2 group cursor-grab active:cursor-grabbing transition-all ${
+                              dragOverIndex === idx
+                                ? "border-green-500 scale-[1.03] shadow-lg"
+                                : "border-gray-200"
+                            }`}
+                          >
                             <div className="relative h-28">
-                              <Image src={img.url} alt={`Photo ${idx + 1}`} fill className="object-cover" />
+                              <Image src={img.url} alt={`Photo ${idx + 1}`} fill className="object-cover pointer-events-none" />
                             </div>
                             {/* Order badge */}
                             <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-black/60 text-white text-[10px] font-bold flex items-center justify-center">
                               {idx + 1}
                             </span>
-                            {/* Actions overlay */}
-                            <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              {idx > 0 && (
-                                <button
-                                  type="button"
-                                  onClick={() => moveImage(idx, -1)}
-                                  className="p-1 rounded-full bg-black/60 text-white hover:bg-black/80"
-                                  title="Monter"
-                                >
-                                  <ArrowUp size={12} />
-                                </button>
-                              )}
-                              {idx < newsImages.length - 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => moveImage(idx, 1)}
-                                  className="p-1 rounded-full bg-black/60 text-white hover:bg-black/80"
-                                  title="Descendre"
-                                >
-                                  <ArrowDown size={12} />
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => removeImageAt(idx)}
-                                className="p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
-                                title="Supprimer"
-                              >
-                                <X size={12} />
-                              </button>
-                            </div>
+                            {/* Delete button */}
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); removeImageAt(idx); }}
+                              className="absolute top-1.5 right-1.5 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Supprimer"
+                            >
+                              <X size={12} />
+                            </button>
                             {/* File name */}
                             {img.file && (
                               <div className="px-2 py-1 bg-gray-50 text-[10px] text-gray-500 truncate flex items-center gap-1">
