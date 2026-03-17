@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import {
   Users, Calendar, MessageSquare, Key, Newspaper, BarChart3,
   GraduationCap, Loader2, Plus, X, ChevronDown, Eye, Trash2, ToggleLeft, ToggleRight,
+  Bold, Italic, Underline, Upload, ImageIcon,
 } from "lucide-react";
 
 type Stats = {
@@ -86,7 +88,7 @@ const statutLabels: Record<string, string> = {
   archive: "Archivé",
 };
 
-const newsCategories = [
+const defaultNewsCategories = [
   { value: "club", label: "Club" },
   { value: "tournoi", label: "Tournoi" },
   { value: "soiree", label: "Soirée" },
@@ -112,11 +114,39 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
   // News creation
   const [showNewsForm, setShowNewsForm] = useState(false);
-  const [newsForm, setNewsForm] = useState({ titre: "", texte: "", categorie: "club", image_url: "", cta_label: "", cta_url: "" });
+  const [newsForm, setNewsForm] = useState({ titre: "", categorie: "club", cta_label: "", cta_url: "" });
   const [creatingNews, setCreatingNews] = useState(false);
   const [newsError, setNewsError] = useState<string | null>(null);
   const [togglingNews, setTogglingNews] = useState<string | null>(null);
   const [deletingNews, setDeletingNews] = useState<string | null>(null);
+
+  // Rich text editor
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  // Image upload
+  const [newsImageFile, setNewsImageFile] = useState<File | null>(null);
+  const [newsImagePreview, setNewsImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Dynamic categories
+  const [customCategories, setCustomCategories] = useState<{ value: string; label: string }[]>([]);
+  const [showNewCatInput, setShowNewCatInput] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const allNewsCategories = [...defaultNewsCategories, ...customCategories];
+
+  // Load custom categories from existing news
+  useEffect(() => {
+    const existingCats = new Set(news.map((n) => n.categorie));
+    const extras: { value: string; label: string }[] = [];
+    existingCats.forEach((cat) => {
+      if (!defaultNewsCategories.some((d) => d.value === cat)) {
+        extras.push({ value: cat, label: cat.charAt(0).toUpperCase() + cat.slice(1) });
+      }
+    });
+    if (extras.length > 0) setCustomCategories(extras);
+  }, [news]);
 
   const supabase = createClient();
 
@@ -169,18 +199,89 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     setTogglingCode(null);
   }
 
+  // --- RICH TEXT HELPERS ---
+  const execCommand = useCallback((command: string) => {
+    document.execCommand(command, false);
+    editorRef.current?.focus();
+  }, []);
+
+  // --- IMAGE HELPERS ---
+  function handleImageSelect(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    setNewsImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => setNewsImagePreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleImageSelect(file);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function removeImage() {
+    setNewsImageFile(null);
+    setNewsImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  // --- CATEGORY HELPERS ---
+  function addCustomCategory() {
+    const name = newCatName.trim();
+    if (!name) return;
+    const value = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "_");
+    if (allNewsCategories.some((c) => c.value === value)) return;
+    setCustomCategories((prev) => [...prev, { value, label: name }]);
+    setNewsForm({ ...newsForm, categorie: value });
+    setNewCatName("");
+    setShowNewCatInput(false);
+  }
+
   // --- NEWS ACTIONS ---
   async function createNewsItem() {
     if (!newsForm.titre.trim()) return;
     setCreatingNews(true);
     setNewsError(null);
+
+    let imageUrl: string | null = null;
+
+    // Upload image if selected
+    if (newsImageFile) {
+      setUploadingImage(true);
+      const ext = newsImageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("news-images")
+        .upload(fileName, newsImageFile, { cacheControl: "3600", upsert: false });
+      if (uploadError) {
+        setNewsError("Erreur upload image : " + uploadError.message);
+        setCreatingNews(false);
+        setUploadingImage(false);
+        return;
+      }
+      const { data: urlData } = supabase.storage.from("news-images").getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
+      setUploadingImage(false);
+    }
+
+    // Get rich text content
+    const htmlContent = editorRef.current?.innerHTML?.trim() || null;
+    const cleanContent = htmlContent === "<br>" || htmlContent === "<div><br></div>" ? null : htmlContent;
+
     const { data, error } = await supabase
       .from("news")
       .insert({
         titre: newsForm.titre.trim(),
-        texte: newsForm.texte.trim() || null,
+        texte: cleanContent,
         categorie: newsForm.categorie,
-        image_url: newsForm.image_url.trim() || null,
+        image_url: imageUrl,
         cta_label: newsForm.cta_label.trim() || null,
         cta_url: newsForm.cta_url.trim() || null,
         published: false,
@@ -192,7 +293,9 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       setNewsError(error.message);
     } else if (data) {
       setNews((prev) => [data, ...prev]);
-      setNewsForm({ titre: "", texte: "", categorie: "club", image_url: "", cta_label: "", cta_url: "" });
+      setNewsForm({ titre: "", categorie: "club", cta_label: "", cta_url: "" });
+      if (editorRef.current) editorRef.current.innerHTML = "";
+      removeImage();
       setShowNewsForm(false);
     }
     setCreatingNews(false);
@@ -486,49 +589,171 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
               </button>
 
               {showNewsForm && (
-                <div className="bg-white rounded-xl p-5 shadow-sm space-y-3">
+                <div className="bg-white rounded-xl p-5 shadow-sm space-y-4">
+                  {/* TITRE */}
                   <div>
                     <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Titre *</label>
                     <input
                       type="text"
                       value={newsForm.titre}
                       onChange={(e) => setNewsForm({ ...newsForm, titre: e.target.value })}
-                      placeholder="Titre de l'actualité"
+                      placeholder="Titre de l&apos;actualité"
                       className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
                     />
                   </div>
+
+                  {/* RICH TEXT EDITOR */}
                   <div>
                     <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Contenu</label>
-                    <textarea
-                      value={newsForm.texte}
-                      onChange={(e) => setNewsForm({ ...newsForm, texte: e.target.value })}
-                      placeholder="Contenu de l'actualité..."
-                      rows={4}
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm resize-none"
-                    />
+                    <div className="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-green-600/30 focus-within:border-green-600">
+                      {/* Toolbar */}
+                      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-gray-200 bg-gray-50">
+                        <button
+                          type="button"
+                          onMouseDown={(e) => { e.preventDefault(); execCommand("bold"); }}
+                          className="p-1.5 rounded hover:bg-gray-200 transition-colors"
+                          title="Gras (Ctrl+B)"
+                        >
+                          <Bold size={14} className="text-gray-700" />
+                        </button>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => { e.preventDefault(); execCommand("italic"); }}
+                          className="p-1.5 rounded hover:bg-gray-200 transition-colors"
+                          title="Italique (Ctrl+I)"
+                        >
+                          <Italic size={14} className="text-gray-700" />
+                        </button>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => { e.preventDefault(); execCommand("underline"); }}
+                          className="p-1.5 rounded hover:bg-gray-200 transition-colors"
+                          title="Souligné (Ctrl+U)"
+                        >
+                          <Underline size={14} className="text-gray-700" />
+                        </button>
+                      </div>
+                      {/* Editable area */}
+                      <div
+                        ref={editorRef}
+                        contentEditable
+                        suppressContentEditableWarning
+                        className="min-h-[120px] px-3 py-2.5 text-sm outline-none prose prose-sm max-w-none"
+                        data-placeholder="Contenu de l&apos;actualité..."
+                        style={{ lineHeight: "1.6" }}
+                      />
+                    </div>
+                    <style jsx>{`
+                      [contenteditable]:empty:before {
+                        content: attr(data-placeholder);
+                        color: #9ca3af;
+                        pointer-events: none;
+                      }
+                    `}</style>
                   </div>
+
+                  {/* IMAGE UPLOAD */}
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Image</label>
+                    {!newsImagePreview ? (
+                      <div
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
+                        onDragLeave={() => setIsDragging(false)}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                          isDragging
+                            ? "border-green-600 bg-green-50"
+                            : "border-gray-200 hover:border-green-600 hover:bg-green-50/50"
+                        }`}
+                      >
+                        <Upload size={24} className="mx-auto text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500">
+                          <span className="font-semibold text-green-600">Cliquez</span> ou glissez une image ici
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP (max 5 Mo)</p>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImageSelect(file);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="relative rounded-lg overflow-hidden border border-gray-200">
+                        <div className="relative h-48">
+                          <Image src={newsImagePreview} alt="Aperçu" fill className="object-cover" />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                        <div className="px-3 py-2 bg-gray-50 text-xs text-gray-500 flex items-center gap-1.5">
+                          <ImageIcon size={12} />
+                          {newsImageFile?.name}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATÉGORIE + CTA */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Catégorie</label>
-                      <select
-                        value={newsForm.categorie}
-                        onChange={(e) => setNewsForm({ ...newsForm, categorie: e.target.value })}
-                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
-                      >
-                        {newsCategories.map((cat) => (
-                          <option key={cat.value} value={cat.value}>{cat.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Image URL</label>
-                      <input
-                        type="text"
-                        value={newsForm.image_url}
-                        onChange={(e) => setNewsForm({ ...newsForm, image_url: e.target.value })}
-                        placeholder="/assets/photos/..."
-                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
-                      />
+                      {!showNewCatInput ? (
+                        <div className="flex gap-2">
+                          <select
+                            value={newsForm.categorie}
+                            onChange={(e) => {
+                              if (e.target.value === "__new__") {
+                                setShowNewCatInput(true);
+                              } else {
+                                setNewsForm({ ...newsForm, categorie: e.target.value });
+                              }
+                            }}
+                            className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                          >
+                            {allNewsCategories.map((cat) => (
+                              <option key={cat.value} value={cat.value}>{cat.label}</option>
+                            ))}
+                            <option value="__new__">+ Nouvelle catégorie</option>
+                          </select>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newCatName}
+                            onChange={(e) => setNewCatName(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && addCustomCategory()}
+                            placeholder="Nom de la catégorie"
+                            autoFocus
+                            className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={addCustomCategory}
+                            disabled={!newCatName.trim()}
+                            className="px-3 py-2.5 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-800 transition-colors disabled:opacity-50"
+                          >
+                            OK
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setShowNewCatInput(false); setNewCatName(""); }}
+                            className="px-3 py-2.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -558,11 +783,11 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                   )}
                   <button
                     onClick={createNewsItem}
-                    disabled={!newsForm.titre.trim() || creatingNews}
+                    disabled={!newsForm.titre.trim() || creatingNews || uploadingImage}
                     className="px-5 py-2.5 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 transition-colors text-sm disabled:opacity-50 flex items-center gap-2"
                   >
-                    {creatingNews && <Loader2 size={14} className="animate-spin" />}
-                    Créer (brouillon)
+                    {(creatingNews || uploadingImage) && <Loader2 size={14} className="animate-spin" />}
+                    {uploadingImage ? "Upload image..." : "Créer (brouillon)"}
                   </button>
                 </div>
               )}

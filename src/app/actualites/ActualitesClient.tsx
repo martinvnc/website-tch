@@ -24,7 +24,7 @@ const categorieBadge: Record<string, { bg: string; text: string; label: string }
   club: { bg: "bg-green-800", text: "text-white", label: "Club" },
 };
 
-const categories = [
+const defaultCategories = [
   { value: "all", label: "Toutes" },
   { value: "club", label: "Club" },
   { value: "tournoi", label: "Tournoi" },
@@ -35,6 +35,12 @@ const categories = [
 export function ActualitesClient({ news }: { news: News[] }) {
   useReveal();
   const [filter, setFilter] = useState("all");
+
+  // Build categories dynamically from news data
+  const extraCats = Array.from(new Set(news.map((n) => n.categorie)))
+    .filter((c) => !defaultCategories.some((d) => d.value === c))
+    .map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }));
+  const categories = [...defaultCategories, ...extraCats];
 
   const filtered = filter === "all" ? news : news.filter((n) => n.categorie === filter);
 
@@ -126,9 +132,10 @@ export function ActualitesClient({ news }: { news: News[] }) {
                         {item.titre}
                       </h3>
                       {item.texte && (
-                        <p className="mt-2 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                          {item.texte}
-                        </p>
+                        <div
+                          className="mt-2 text-sm text-muted-foreground line-clamp-3 leading-relaxed prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: item.texte }}
+                        />
                       )}
                       {item.cta_label && item.cta_url && (
                         <Link

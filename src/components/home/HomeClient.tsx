@@ -205,9 +205,10 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         {item.titre}
                       </h3>
                       {item.texte && (
-                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                          {item.texte}
-                        </p>
+                        <div
+                          className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: item.texte }}
+                        />
                       )}
                       {item.cta_label && item.cta_url && (
                         <Link
