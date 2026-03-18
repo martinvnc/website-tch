@@ -32,6 +32,7 @@ type Resultat = {
   date: string;
   competition: string;
   sets?: SetScore[] | null;
+  image_url?: string | null;
 };
 
 type Terrain = {
@@ -258,8 +259,19 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                 return (
                   <div
                     key={r.id}
-                    className={`reveal d${Math.min(i + 1, 4)} bg-[#f7f5f0] rounded-2xl p-5 card-hover border border-gray-100`}
+                    className={`reveal d${Math.min(i + 1, 4)} bg-[#f7f5f0] rounded-2xl overflow-hidden card-hover border border-gray-100`}
                   >
+                    {r.image_url && (
+                      <div className="relative w-full h-40">
+                        <Image
+                          src={r.image_url}
+                          alt={`${r.equipe_tch} vs ${r.equipe_adversaire}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className={`p-5`}>
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         {r.competition}
@@ -304,6 +316,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         year: "numeric",
                       })}
                     </p>
+                    </div>
                   </div>
                 );
               })}

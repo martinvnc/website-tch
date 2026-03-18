@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useReveal } from "@/hooks/useReveal";
 import { Trophy, Minus, X, Filter } from "lucide-react";
 
@@ -18,6 +19,7 @@ type Resultat = {
   date: string;
   competition: string;
   sets?: SetScore[] | null;
+  image_url?: string | null;
 };
 
 const resultatStyle: Record<string, { icon: React.ReactNode; color: string; bg: string; label: string }> = {
@@ -147,50 +149,62 @@ export function ResultatsClient({ resultats }: { resultats: Resultat[] }) {
               return (
                 <div
                   key={r.id}
-                  className={`reveal d${Math.min(i + 1, 4)} ${style.bg} rounded-xl p-4 card-hover flex items-center justify-between gap-4`}
+                  className={`reveal d${Math.min(i + 1, 4)} ${style.bg} rounded-xl overflow-hidden card-hover flex items-center gap-4`}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`flex items-center gap-1 text-xs font-bold ${style.color}`}>
-                        {style.icon} {style.label}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {r.competition}
-                      </span>
+                  {r.image_url && (
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+                      <Image
+                        src={r.image_url}
+                        alt={`${r.equipe_tch} vs ${r.equipe_adversaire}`}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-bold text-green-900">{r.equipe_tch}</span>
-                      <span className="text-xs text-muted-foreground">vs</span>
-                      <span className="text-sm text-muted-foreground">{r.equipe_adversaire}</span>
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {new Date(r.date).toLocaleDateString("fr-FR", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    {r.sets && r.sets.length > 0 ? (
-                      <div className="flex items-center gap-2">
-                        {r.sets.map((s, si) => (
-                          <span key={si} className="text-lg font-bold text-green-900">
-                            {s.tch}-{s.adv}
-                          </span>
-                        ))}
+                  )}
+                  <div className={`flex-1 min-w-0 flex items-center justify-between gap-4 ${r.image_url ? "py-3 pr-4" : "p-4"}`}>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`flex items-center gap-1 text-xs font-bold ${style.color}`}>
+                          {style.icon} {style.label}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {r.competition}
+                        </span>
                       </div>
-                    ) : (
-                      <>
-                        <span className="text-3xl font-bold text-green-900">
-                          {r.score_tch}
-                        </span>
-                        <span className="mx-1 text-lg text-muted-foreground">-</span>
-                        <span className="text-3xl font-bold text-muted-foreground">
-                          {r.score_adv}
-                        </span>
-                      </>
-                    )}
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-bold text-green-900">{r.equipe_tch}</span>
+                        <span className="text-xs text-muted-foreground">vs</span>
+                        <span className="text-sm text-muted-foreground">{r.equipe_adversaire}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {new Date(r.date).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      {r.sets && r.sets.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          {r.sets.map((s, si) => (
+                            <span key={si} className="text-lg font-bold text-green-900">
+                              {s.tch}-{s.adv}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          <span className="text-3xl font-bold text-green-900">
+                            {r.score_tch}
+                          </span>
+                          <span className="mx-1 text-lg text-muted-foreground">-</span>
+                          <span className="text-3xl font-bold text-muted-foreground">
+                            {r.score_adv}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
