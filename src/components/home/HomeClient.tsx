@@ -246,14 +246,14 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
               <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
                 Comp&eacute;titions
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-green-900">
+              <h2 className="text-2xl sm:text-3xl font-bold text-green-900">
                 Derniers r&eacute;sultats
               </h2>
-              <p className="mt-3 text-muted-foreground max-w-md mx-auto">
+              <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
                 Les performances r&eacute;centes de nos &eacute;quipes
               </p>
             </div>
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {resultats.map((r, i) => {
                 const style = resultatStyle[r.resultat] ?? resultatStyle.draw;
                 return (
@@ -262,7 +262,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                     className={`reveal d${Math.min(i + 1, 4)} bg-[#f7f5f0] rounded-2xl overflow-hidden card-hover border border-gray-100`}
                   >
                     {r.image_url && (
-                      <div className="relative w-full h-40">
+                      <div className="relative w-full h-32">
                         <Image
                           src={r.image_url}
                           alt={`${r.equipe_tch} vs ${r.equipe_adversaire}`}
@@ -271,7 +271,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         />
                       </div>
                     )}
-                    <div className={`p-5`}>
+                    <div className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         {r.competition}

@@ -21,7 +21,7 @@ export default async function HomePage() {
       .from("resultats")
       .select("*")
       .order("date", { ascending: false })
-      .limit(6),
+      .limit(3),
     supabase
       .from("ticker_items")
       .select("*")
