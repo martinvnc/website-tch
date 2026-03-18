@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useReveal } from "@/hooks/useReveal";
-import { Trophy, Minus, X, ArrowRight, ChevronRight } from "lucide-react";
+import { Trophy, Minus, X, ArrowRight } from "lucide-react";
 import { parseImageUrls } from "@/lib/utils";
 import { NewsCarousel } from "@/components/ui/NewsCarousel";
 
