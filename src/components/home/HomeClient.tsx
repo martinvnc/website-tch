@@ -240,7 +240,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
 
       {/* RÉSULTATS */}
       {resultats.length > 0 && (
-        <section className="py-20 sm:py-28 bg-white">
+        <section className="pt-12 pb-12 sm:pt-14 sm:pb-14 bg-white">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
             <div className="text-center reveal">
               <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
