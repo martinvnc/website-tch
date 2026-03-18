@@ -36,13 +36,11 @@ type Resultat = {
 };
 
 type Ticker = { id: string; texte: string };
-type Sponsor = { id: string; nom: string; logo_url: string | null; site_url: string | null };
 
 type Props = {
   news: News[];
   resultats: Resultat[];
   ticker: Ticker[];
-  sponsors: Sponsor[];
 };
 
 const categorieBadge: Record<string, { bg: string; text: string }> = {
@@ -58,7 +56,7 @@ const resultatStyle: Record<string, { icon: React.ReactNode; color: string; labe
   draw: { icon: <Minus size={16} />, color: "text-[#f6ca73]", label: "Nul" },
 };
 
-export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
+export function HomeClient({ news, resultats, ticker }: Props) {
   useReveal();
 
   return (
@@ -338,45 +336,36 @@ export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
 
 
       {/* SPONSORS */}
-      {sponsors.length > 0 && (() => {
-        const localLogos: Record<string, string> = {
-          "script colors": "/assets/partenaires/script-colors.png",
-          "schelfhout": "/assets/partenaires/schelfhout.png",
-          "la cav'events": "/assets/partenaires/cavevents.png",
-          "cav'events": "/assets/partenaires/cavevents.png",
-          "lys vision": "/assets/partenaires/lys-vision.png",
-          "ville d'halluin": "/assets/partenaires/halluin.png",
-          "halluin": "/assets/partenaires/halluin.png",
-          "atelier compote": "/assets/partenaires/atelier-compote.png",
-        };
-        const getLogo = (s: Sponsor) => s.logo_url || localLogos[s.nom.toLowerCase()] || null;
+      {(() => {
+        const logos = [
+          { src: "/assets/partenaires/script-colors.png", alt: "Script Colors" },
+          { src: "/assets/partenaires/schelfhout.png", alt: "Schelfhout" },
+          { src: "/assets/partenaires/cavevents.png", alt: "La Cav'events" },
+          { src: "/assets/partenaires/lys-vision.png", alt: "Lys Vision" },
+          { src: "/assets/partenaires/halluin.png", alt: "Ville d'Halluin" },
+          { src: "/assets/partenaires/atelier-compote.png", alt: "Atelier Compote" },
+        ];
         return (
         <section className="py-10 bg-white border-t border-gray-100 overflow-hidden">
+          <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">
+            Nos partenaires
+          </p>
           <div className="relative">
             <div className="flex animate-sponsors whitespace-nowrap">
-              {[...sponsors, ...sponsors].map((s, i) => {
-                const logo = getLogo(s);
-                return (
+              {[...logos, ...logos].map((l, i) => (
                 <div
-                  key={`${s.id}-${i}`}
+                  key={`${l.alt}-${i}`}
                   className="flex-shrink-0 flex items-center justify-center mx-8 sm:mx-12"
                 >
-                  {logo ? (
-                    <Image
-                      src={logo}
-                      alt={s.nom}
-                      width={160}
-                      height={64}
-                      className="h-14 sm:h-16 w-auto opacity-60 hover:opacity-100 transition-opacity duration-300"
-                    />
-                  ) : (
-                    <span className="text-sm font-medium text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-300 px-4 py-2">
-                      {s.nom}
-                    </span>
-                  )}
+                  <Image
+                    src={l.src}
+                    alt={l.alt}
+                    width={160}
+                    height={64}
+                    className="h-14 sm:h-16 w-auto opacity-60 hover:opacity-100 transition-opacity duration-300"
+                  />
                 </div>
-                );
-              })}
+              ))}
             </div>
           </div>
           <style jsx>{`
