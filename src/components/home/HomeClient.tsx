@@ -211,7 +211,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         />
                       )}
                       {item.cta_label && item.cta_url && (
-                        <span className="inline-flex items-center mt-3 px-3 py-1.5 rounded-full text-xs font-bold bg-green-600 text-white group-hover:bg-[#f6ca73] group-hover:text-green-900 transition-colors">
+                        <span className="inline-flex items-center mt-3 px-3 py-1.5 rounded-full text-xs font-bold bg-green-600 text-white group-hover:bg-green-800 transition-colors">
                           {item.cta_label}
                         </span>
                       )}
@@ -223,7 +223,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
             <div className="mt-10 text-center reveal d4">
               <Link
                 href="/actualites"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-sm border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-sm bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] transition-colors"
               >
                 Voir toutes les actualit&eacute;s
                 <ArrowRight size={16} />
