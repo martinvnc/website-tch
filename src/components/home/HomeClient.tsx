@@ -35,13 +35,6 @@ type Resultat = {
   image_url?: string | null;
 };
 
-type Terrain = {
-  id: string;
-  nom: string;
-  surface: string;
-  type: "indoor" | "outdoor";
-};
-
 type Ticker = { id: string; texte: string };
 type Sponsor = { id: string; nom: string; logo_url: string | null; site_url: string | null };
 
@@ -50,7 +43,6 @@ type Props = {
   resultats: Resultat[];
   ticker: Ticker[];
   sponsors: Sponsor[];
-  terrains: Terrain[];
 };
 
 const categorieBadge: Record<string, { bg: string; text: string }> = {
