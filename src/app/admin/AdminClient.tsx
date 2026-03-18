@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Users, Calendar, MessageSquare, Key, Newspaper, BarChart3,
   GraduationCap, Loader2, Plus, X, ChevronDown, Eye, Trash2, ToggleLeft, ToggleRight,
-  Bold, Italic, Underline, Upload, ImageIcon, Pencil,
+  Bold, Italic, Underline, Upload, ImageIcon, Pencil, Trophy,
 } from "lucide-react";
 import { parseImageUrls } from "@/lib/utils";
 
@@ -58,12 +58,31 @@ type NewsItem = {
   date_publication: string;
 };
 
+type SetScore = { tch: number; adv: number };
+
+type ResultItem = {
+  id: string;
+  categorie: "interclub" | "tournoi" | "amical";
+  type: string;
+  equipe_tch: string;
+  equipe_adversaire: string;
+  score_tch: number;
+  score_adv: number;
+  resultat: "win" | "loss" | "draw";
+  date: string;
+  competition: string;
+  sets: SetScore[] | null;
+  format: string | null;
+  created_at: string;
+};
+
 type Props = {
   stats: Stats;
   codes: Code[];
   recentTickets: Ticket[];
   recentReservations: RecentReservation[];
   news: NewsItem[];
+  resultats: ResultItem[];
 };
 
 const adminTabs = [
@@ -71,6 +90,7 @@ const adminTabs = [
   { id: "tickets", label: "Tickets", icon: <MessageSquare size={16} /> },
   { id: "codes", label: "Codes accès", icon: <Key size={16} /> },
   { id: "news", label: "News", icon: <Newspaper size={16} /> },
+  { id: "resultats", label: "Résultats", icon: <Trophy size={16} /> },
 ];
 
 const statutColors: Record<string, string> = {
@@ -96,7 +116,42 @@ const initialNewsCategories = [
   { value: "stage", label: "Stage" },
 ];
 
-export function AdminClient({ stats, codes: initialCodes, recentTickets: initialTickets, recentReservations, news: initialNews }: Props) {
+const defaultResultForm = {
+  categorie: "interclub" as "interclub" | "tournoi" | "amical",
+  equipe_tch: "",
+  equipe_adversaire: "",
+  score_tch: 0,
+  score_adv: 0,
+  competition: "",
+  date: new Date().toISOString().split("T")[0],
+  set1_tch: 0, set1_adv: 0,
+  set2_tch: 0, set2_adv: 0,
+  set3_tch: 0, set3_adv: 0,
+  has_set3: false,
+};
+
+function computeResultat(form: typeof defaultResultForm): "win" | "loss" | "draw" {
+  if (form.categorie === "interclub") {
+    if (form.score_tch > form.score_adv) return "win";
+    if (form.score_tch < form.score_adv) return "loss";
+    return "draw";
+  }
+  const sets = [
+    { tch: form.set1_tch, adv: form.set1_adv },
+    { tch: form.set2_tch, adv: form.set2_adv },
+  ];
+  if (form.has_set3) sets.push({ tch: form.set3_tch, adv: form.set3_adv });
+  let tchWins = 0, advWins = 0;
+  sets.forEach(s => {
+    if (s.tch > s.adv) tchWins++;
+    else if (s.adv > s.tch) advWins++;
+  });
+  if (tchWins > advWins) return "win";
+  if (advWins > tchWins) return "loss";
+  return "draw";
+}
+
+export function AdminClient({ stats, codes: initialCodes, recentTickets: initialTickets, recentReservations, news: initialNews, resultats: initialResultats }: Props) {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [codes, setCodes] = useState(initialCodes);
   const [tickets, setTickets] = useState(initialTickets);
@@ -121,6 +176,15 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [togglingNews, setTogglingNews] = useState<string | null>(null);
   const [deletingNews, setDeletingNews] = useState<string | null>(null);
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
+
+  // Results
+  const [resultats, setResultats] = useState(initialResultats);
+  const [showResultForm, setShowResultForm] = useState(false);
+  const [editingResult, setEditingResult] = useState<ResultItem | null>(null);
+  const [deletingResult, setDeletingResult] = useState<string | null>(null);
+  const [creatingResult, setCreatingResult] = useState(false);
+  const [resultError, setResultError] = useState<string | null>(null);
+  const [resultForm, setResultForm] = useState({ ...defaultResultForm });
 
   // Rich text editor
   const editorRef = useRef<HTMLDivElement>(null);
@@ -457,6 +521,152 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     }
     setCreatingNews(false);
   }
+
+  // ── Results CRUD ──
+  async function createResultItem() {
+    if (!resultForm.equipe_tch.trim() || !resultForm.equipe_adversaire.trim()) {
+      setResultError("Les deux équipes/joueurs sont requis");
+      return;
+    }
+    setCreatingResult(true);
+    setResultError(null);
+
+    const resultat = computeResultat(resultForm);
+    let setsData: SetScore[] | null = null;
+    let scoreTch = resultForm.score_tch;
+    let scoreAdv = resultForm.score_adv;
+
+    if (resultForm.categorie !== "interclub") {
+      const sets: SetScore[] = [
+        { tch: resultForm.set1_tch, adv: resultForm.set1_adv },
+        { tch: resultForm.set2_tch, adv: resultForm.set2_adv },
+      ];
+      if (resultForm.has_set3) sets.push({ tch: resultForm.set3_tch, adv: resultForm.set3_adv });
+      setsData = sets;
+      // score_tch/adv = sets won for backward compat display
+      let tw = 0, aw = 0;
+      sets.forEach(s => { if (s.tch > s.adv) tw++; else if (s.adv > s.tch) aw++; });
+      scoreTch = tw;
+      scoreAdv = aw;
+    }
+
+    const { data, error } = await supabase.from("resultats").insert({
+      categorie: resultForm.categorie,
+      type: resultForm.categorie === "interclub" ? "Interclub" : resultForm.categorie === "tournoi" ? "Tournoi" : "Match amical",
+      equipe_tch: resultForm.equipe_tch.trim(),
+      equipe_adversaire: resultForm.equipe_adversaire.trim(),
+      score_tch: scoreTch,
+      score_adv: scoreAdv,
+      resultat,
+      competition: resultForm.competition.trim(),
+      date: resultForm.date,
+      sets: setsData,
+      format: resultForm.categorie !== "interclub" ? "2sets_supertb" : null,
+    }).select().single();
+
+    if (error) {
+      setResultError(error.message);
+    } else if (data) {
+      setResultats(prev => [data as ResultItem, ...prev]);
+      setResultForm({ ...defaultResultForm });
+      setShowResultForm(false);
+    }
+    setCreatingResult(false);
+  }
+
+  async function updateResultItem() {
+    if (!editingResult) return;
+    setCreatingResult(true);
+    setResultError(null);
+
+    const resultat = computeResultat(resultForm);
+    let setsData: SetScore[] | null = null;
+    let scoreTch = resultForm.score_tch;
+    let scoreAdv = resultForm.score_adv;
+
+    if (resultForm.categorie !== "interclub") {
+      const sets: SetScore[] = [
+        { tch: resultForm.set1_tch, adv: resultForm.set1_adv },
+        { tch: resultForm.set2_tch, adv: resultForm.set2_adv },
+      ];
+      if (resultForm.has_set3) sets.push({ tch: resultForm.set3_tch, adv: resultForm.set3_adv });
+      setsData = sets;
+      let tw = 0, aw = 0;
+      sets.forEach(s => { if (s.tch > s.adv) tw++; else if (s.adv > s.tch) aw++; });
+      scoreTch = tw;
+      scoreAdv = aw;
+    }
+
+    const { data, error } = await supabase.from("resultats").update({
+      categorie: resultForm.categorie,
+      type: resultForm.categorie === "interclub" ? "Interclub" : resultForm.categorie === "tournoi" ? "Tournoi" : "Match amical",
+      equipe_tch: resultForm.equipe_tch.trim(),
+      equipe_adversaire: resultForm.equipe_adversaire.trim(),
+      score_tch: scoreTch,
+      score_adv: scoreAdv,
+      resultat,
+      competition: resultForm.competition.trim(),
+      date: resultForm.date,
+      sets: setsData,
+      format: resultForm.categorie !== "interclub" ? "2sets_supertb" : null,
+    }).eq("id", editingResult.id).select().single();
+
+    if (error) {
+      setResultError(error.message);
+    } else if (data) {
+      setResultats(prev => prev.map(r => r.id === editingResult.id ? data as ResultItem : r));
+      setResultForm({ ...defaultResultForm });
+      setEditingResult(null);
+      setShowResultForm(false);
+    }
+    setCreatingResult(false);
+  }
+
+  async function deleteResultItem(id: string) {
+    if (!confirm("Supprimer ce résultat ?")) return;
+    setDeletingResult(id);
+    const { error } = await supabase.from("resultats").delete().eq("id", id);
+    if (!error) {
+      setResultats(prev => prev.filter(r => r.id !== id));
+    }
+    setDeletingResult(null);
+  }
+
+  function startEditResult(item: ResultItem) {
+    setEditingResult(item);
+    const f = { ...defaultResultForm };
+    f.categorie = item.categorie;
+    f.equipe_tch = item.equipe_tch;
+    f.equipe_adversaire = item.equipe_adversaire;
+    f.score_tch = item.score_tch;
+    f.score_adv = item.score_adv;
+    f.competition = item.competition;
+    f.date = item.date;
+    if (item.sets && item.sets.length >= 2) {
+      f.set1_tch = item.sets[0].tch; f.set1_adv = item.sets[0].adv;
+      f.set2_tch = item.sets[1].tch; f.set2_adv = item.sets[1].adv;
+      if (item.sets.length === 3) {
+        f.has_set3 = true;
+        f.set3_tch = item.sets[2].tch; f.set3_adv = item.sets[2].adv;
+      }
+    }
+    setResultForm(f);
+    setShowResultForm(true);
+  }
+
+  function cancelEditResult() {
+    setEditingResult(null);
+    setResultForm({ ...defaultResultForm });
+    setResultError(null);
+    setShowResultForm(false);
+  }
+
+  const currentResultat = computeResultat(resultForm);
+  const resultatBadge: Record<string, { color: string; label: string }> = {
+    win: { color: "bg-green-100 text-green-700", label: "Victoire" },
+    loss: { color: "bg-red-100 text-red-700", label: "Défaite" },
+    draw: { color: "bg-yellow-100 text-yellow-700", label: "Nul" },
+  };
 
   return (
     <>
@@ -1062,6 +1272,249 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
           )}
         </div>
       </section>
+
+      {/* ── RÉSULTATS TAB ── */}
+      {activeTab === "resultats" && (
+        <section className="py-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-green-900">Résultats</h2>
+              <button
+                onClick={() => showResultForm ? cancelEditResult() : setShowResultForm(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-800 transition-colors"
+              >
+                {showResultForm ? <X size={16} /> : <Plus size={16} />}
+                {showResultForm ? "Annuler" : "Nouveau résultat"}
+              </button>
+            </div>
+
+            {showResultForm && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm border mb-8">
+                <h3 className="font-bold text-green-900 mb-4">
+                  {editingResult ? "Modifier le résultat" : "Ajouter un résultat"}
+                </h3>
+
+                {/* Category selector */}
+                <div className="flex gap-2 mb-5">
+                  {(["interclub", "tournoi", "amical"] as const).map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setResultForm(f => ({ ...f, categorie: cat }))}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                        resultForm.categorie === cat
+                          ? "bg-green-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {cat === "interclub" ? "Interclub" : cat === "tournoi" ? "Tournoi" : "Match amical"}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-bold text-green-900 mb-1">
+                      {resultForm.categorie === "interclub" ? "Équipe TCH" : "Joueur TCH"}
+                    </label>
+                    <input
+                      type="text"
+                      value={resultForm.equipe_tch}
+                      onChange={e => setResultForm(f => ({ ...f, equipe_tch: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      placeholder={resultForm.categorie === "interclub" ? "TCH 1" : "M. Dupont"}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-green-900 mb-1">Adversaire</label>
+                    <input
+                      type="text"
+                      value={resultForm.equipe_adversaire}
+                      onChange={e => setResultForm(f => ({ ...f, equipe_adversaire: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      placeholder={resultForm.categorie === "interclub" ? "Roubaix TC" : "P. Martin"}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-green-900 mb-1">Compétition</label>
+                    <input
+                      type="text"
+                      value={resultForm.competition}
+                      onChange={e => setResultForm(f => ({ ...f, competition: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                      placeholder="Interclub Div.2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-green-900 mb-1">Date</label>
+                    <input
+                      type="date"
+                      value={resultForm.date}
+                      onChange={e => setResultForm(f => ({ ...f, date: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-600/30 focus:border-green-600 text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Interclub: global score */}
+                {resultForm.categorie === "interclub" && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold text-green-900 mb-2">Score</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        min={0}
+                        value={resultForm.score_tch}
+                        onChange={e => setResultForm(f => ({ ...f, score_tch: parseInt(e.target.value) || 0 }))}
+                        className="w-20 px-3 py-2 rounded-lg border border-gray-200 text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                      />
+                      <span className="text-gray-400 font-bold">-</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={resultForm.score_adv}
+                        onChange={e => setResultForm(f => ({ ...f, score_adv: parseInt(e.target.value) || 0 }))}
+                        className="w-20 px-3 py-2 rounded-lg border border-gray-200 text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Tournoi/Amical: sets */}
+                {resultForm.categorie !== "interclub" && (
+                  <div className="mb-4 space-y-3">
+                    <label className="block text-sm font-bold text-green-900">Sets</label>
+                    {[1, 2].map(setNum => (
+                      <div key={setNum} className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 w-12">Set {setNum}</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={resultForm[`set${setNum}_tch` as keyof typeof resultForm] as number}
+                          onChange={e => setResultForm(f => ({ ...f, [`set${setNum}_tch`]: parseInt(e.target.value) || 0 }))}
+                          className="w-16 px-2 py-2 rounded-lg border border-gray-200 text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                        />
+                        <span className="text-gray-400">-</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={resultForm[`set${setNum}_adv` as keyof typeof resultForm] as number}
+                          onChange={e => setResultForm(f => ({ ...f, [`set${setNum}_adv`]: parseInt(e.target.value) || 0 }))}
+                          className="w-16 px-2 py-2 rounded-lg border border-gray-200 text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                        />
+                      </div>
+                    ))}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={resultForm.has_set3}
+                        onChange={e => setResultForm(f => ({ ...f, has_set3: e.target.checked }))}
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-600"
+                      />
+                      <span className="text-sm text-gray-700">3ème set (super tie-break)</span>
+                    </label>
+                    {resultForm.has_set3 && (
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 w-12">Set 3</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={resultForm.set3_tch}
+                          onChange={e => setResultForm(f => ({ ...f, set3_tch: parseInt(e.target.value) || 0 }))}
+                          className="w-16 px-2 py-2 rounded-lg border border-gray-200 text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                        />
+                        <span className="text-gray-400">-</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={resultForm.set3_adv}
+                          onChange={e => setResultForm(f => ({ ...f, set3_adv: parseInt(e.target.value) || 0 }))}
+                          className="w-16 px-2 py-2 rounded-lg border border-gray-200 text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Auto result badge */}
+                <div className="mb-4">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${resultatBadge[currentResultat].color}`}>
+                    {resultatBadge[currentResultat].label}
+                  </span>
+                </div>
+
+                {resultError && (
+                  <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{resultError}</div>
+                )}
+
+                <button
+                  onClick={editingResult ? updateResultItem : createResultItem}
+                  disabled={creatingResult}
+                  className="px-6 py-2.5 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 transition-colors text-sm disabled:opacity-50 flex items-center gap-2"
+                >
+                  {creatingResult && <Loader2 size={16} className="animate-spin" />}
+                  {editingResult ? "Enregistrer" : "Créer le résultat"}
+                </button>
+              </div>
+            )}
+
+            {/* Results list */}
+            <div className="space-y-3">
+              {resultats.map(r => {
+                const badge = resultatBadge[r.resultat] ?? resultatBadge.draw;
+                const catLabel = r.categorie === "interclub" ? "Interclub" : r.categorie === "tournoi" ? "Tournoi" : "Amical";
+                return (
+                  <div key={r.id} className="bg-white rounded-xl p-4 shadow-sm border flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">{catLabel}</span>
+                        <span className="text-xs text-gray-500">{r.competition}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.color}`}>{badge.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-green-900 text-sm">{r.equipe_tch}</span>
+                        <span className="text-gray-400 text-xs">vs</span>
+                        <span className="text-sm text-gray-600">{r.equipe_adversaire}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {r.sets ? (
+                          <span className="text-sm font-bold text-green-900">
+                            {r.sets.map((s: SetScore) => `${s.tch}-${s.adv}`).join("  ")}
+                          </span>
+                        ) : (
+                          <span className="text-sm font-bold text-green-900">{r.score_tch} - {r.score_adv}</span>
+                        )}
+                        <span className="text-xs text-gray-400">
+                          {new Date(r.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => startEditResult(r)}
+                        className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors"
+                        title="Modifier"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => deleteResultItem(r.id)}
+                        disabled={deletingResult === r.id}
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                        title="Supprimer"
+                      >
+                        {deletingResult === r.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {resultats.length === 0 && (
+                <p className="text-center text-sm text-gray-400 py-8">Aucun résultat pour le moment</p>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }

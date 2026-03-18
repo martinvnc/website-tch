@@ -18,9 +18,12 @@ type News = {
   date_publication: string;
 };
 
+type SetScore = { tch: number; adv: number };
+
 type Resultat = {
   id: string;
   type: string;
+  categorie?: "interclub" | "tournoi" | "amical";
   equipe_tch: string;
   equipe_adversaire: string;
   score_tch: number;
@@ -28,6 +31,7 @@ type Resultat = {
   resultat: "win" | "loss" | "draw";
   date: string;
   competition: string;
+  sets?: SetScore[] | null;
 };
 
 type Terrain = {
@@ -272,13 +276,25 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         </p>
                       </div>
                       <div className="text-right">
-                        <span className="text-2xl font-bold text-green-900">
-                          {r.score_tch}
-                        </span>
-                        <span className="mx-1.5 text-muted-foreground">-</span>
-                        <span className="text-2xl font-bold text-muted-foreground">
-                          {r.score_adv}
-                        </span>
+                        {r.sets && r.sets.length > 0 ? (
+                          <div className="flex items-center gap-1.5">
+                            {r.sets.map((s, si) => (
+                              <span key={si} className="text-lg font-bold text-green-900">
+                                {s.tch}-{s.adv}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-2xl font-bold text-green-900">
+                              {r.score_tch}
+                            </span>
+                            <span className="mx-1.5 text-muted-foreground">-</span>
+                            <span className="text-2xl font-bold text-muted-foreground">
+                              {r.score_adv}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <p className="mt-3 text-xs text-muted-foreground">

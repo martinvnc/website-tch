@@ -34,6 +34,7 @@ export default async function AdminPage() {
     { data: recentReservations },
     { data: news },
     { count: seancesCount },
+    { data: resultats },
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase.from("reservations").select("*", { count: "exact", head: true }).eq("statut", "confirmed"),
@@ -44,6 +45,7 @@ export default async function AdminPage() {
       .eq("statut", "confirmed").order("created_at", { ascending: false }).limit(5),
     supabase.from("news").select("*").order("created_at", { ascending: false }),
     supabase.from("seances").select("*", { count: "exact", head: true }).eq("statut", "planifiee"),
+    supabase.from("resultats").select("*").order("date", { ascending: false }),
   ]);
 
   return (
@@ -58,6 +60,7 @@ export default async function AdminPage() {
       recentTickets={recentTickets ?? []}
       recentReservations={recentReservations ?? []}
       news={news ?? []}
+      resultats={resultats ?? []}
     />
   );
 }

@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useReveal } from "@/hooks/useReveal";
 import { Trophy, Minus, X, Filter } from "lucide-react";
 
+type SetScore = { tch: number; adv: number };
+
 type Resultat = {
   id: string;
   type: string;
+  categorie?: "interclub" | "tournoi" | "amical";
   equipe_tch: string;
   equipe_adversaire: string;
   score_tch: number;
@@ -14,6 +17,7 @@ type Resultat = {
   resultat: "win" | "loss" | "draw";
   date: string;
   competition: string;
+  sets?: SetScore[] | null;
 };
 
 const resultatStyle: Record<string, { icon: React.ReactNode; color: string; bg: string; label: string }> = {
@@ -28,10 +32,12 @@ export function ResultatsClient({ resultats }: { resultats: Resultat[] }) {
 
   const types = Array.from(new Set(resultats.map((r) => r.type)));
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [catFilter, setCatFilter] = useState<string>("all");
 
   const filtered = resultats.filter((r) => {
     if (filter !== "all" && r.resultat !== filter) return false;
     if (typeFilter !== "all" && r.type !== typeFilter) return false;
+    if (catFilter !== "all" && r.categorie !== catFilter) return false;
     return true;
   });
 
@@ -87,6 +93,19 @@ export function ResultatsClient({ resultats }: { resultats: Resultat[] }) {
             >
               Défaites
             </button>
+
+            <span className="text-gray-300">|</span>
+            {(["all", "interclub", "tournoi", "amical"] as const).map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCatFilter(cat)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                  catFilter === cat ? "bg-green-600 text-white" : "bg-white text-green-900 hover:bg-green-600/10"
+                }`}
+              >
+                {cat === "all" ? "Toutes catégories" : cat === "interclub" ? "Interclub" : cat === "tournoi" ? "Tournois" : "Amicaux"}
+              </button>
+            ))}
 
             {types.length > 1 && (
               <select
@@ -153,13 +172,25 @@ export function ResultatsClient({ resultats }: { resultats: Resultat[] }) {
                     </p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <span className="text-3xl font-bold text-green-900">
-                      {r.score_tch}
-                    </span>
-                    <span className="mx-1 text-lg text-muted-foreground">-</span>
-                    <span className="text-3xl font-bold text-muted-foreground">
-                      {r.score_adv}
-                    </span>
+                    {r.sets && r.sets.length > 0 ? (
+                      <div className="flex items-center gap-2">
+                        {r.sets.map((s, si) => (
+                          <span key={si} className="text-lg font-bold text-green-900">
+                            {s.tch}-{s.adv}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        <span className="text-3xl font-bold text-green-900">
+                          {r.score_tch}
+                        </span>
+                        <span className="mx-1 text-lg text-muted-foreground">-</span>
+                        <span className="text-3xl font-bold text-muted-foreground">
+                          {r.score_adv}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               );
