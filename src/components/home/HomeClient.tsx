@@ -362,7 +362,7 @@ export function HomeClient({ news, resultats, ticker }: Props) {
                     alt={l.alt}
                     width={160}
                     height={64}
-                    className="h-14 sm:h-16 w-auto opacity-60 hover:opacity-100 transition-opacity duration-300"
+                    className="h-14 sm:h-16 w-auto"
                   />
                 </div>
               ))}
