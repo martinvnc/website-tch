@@ -211,7 +211,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                         />
                       )}
                       {item.cta_label && item.cta_url && (
-                        <span className="inline-flex items-center mt-3 px-3 py-1.5 rounded-full text-xs font-bold bg-green-600 text-white group-hover:bg-green-800 transition-colors">
+                        <span className="inline-flex items-center mt-3 px-3 py-1.5 rounded-full text-xs font-bold bg-green-600 text-white group-hover:bg-[#f6ca73] group-hover:text-green-900 transition-colors">
                           {item.cta_label}
                         </span>
                       )}
