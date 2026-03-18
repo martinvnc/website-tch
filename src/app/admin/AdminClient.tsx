@@ -73,6 +73,7 @@ type ResultItem = {
   competition: string;
   sets: SetScore[] | null;
   format: string | null;
+  image_url: string | null;
   created_at: string;
 };
 
@@ -185,6 +186,9 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [creatingResult, setCreatingResult] = useState(false);
   const [resultError, setResultError] = useState<string | null>(null);
   const [resultForm, setResultForm] = useState({ ...defaultResultForm });
+  const [resultImage, setResultImage] = useState<{ url: string; file?: File } | null>(null);
+  const [uploadingResultImage, setUploadingResultImage] = useState(false);
+  const resultFileInputRef = useRef<HTMLInputElement>(null);
 
   // Rich text editor
   const editorRef = useRef<HTMLDivElement>(null);
@@ -522,6 +526,25 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     setCreatingNews(false);
   }
 
+  // ── Results helpers ──
+  async function uploadResultImage(): Promise<string | null> {
+    if (!resultImage) return null;
+    if (!resultImage.file) return resultImage.url; // existing image from edit
+    setUploadingResultImage(true);
+    const ext = resultImage.file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const fileName = `resultats/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("news-images")
+      .upload(fileName, resultImage.file, { cacheControl: "3600", upsert: false });
+    setUploadingResultImage(false);
+    if (uploadError) {
+      setResultError("Erreur upload image : " + uploadError.message);
+      return "__error__";
+    }
+    const { data: urlData } = supabase.storage.from("news-images").getPublicUrl(fileName);
+    return urlData.publicUrl;
+  }
+
   // ── Results CRUD ──
   async function createResultItem() {
     if (!resultForm.equipe_tch.trim() || !resultForm.equipe_adversaire.trim()) {
@@ -530,6 +553,10 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     }
     setCreatingResult(true);
     setResultError(null);
+
+    // Upload image if any
+    const imageUrl = await uploadResultImage();
+    if (imageUrl === "__error__") { setCreatingResult(false); return; }
 
     const resultat = computeResultat(resultForm);
     let setsData: SetScore[] | null = null;
@@ -543,7 +570,6 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       ];
       if (resultForm.has_set3) sets.push({ tch: resultForm.set3_tch, adv: resultForm.set3_adv });
       setsData = sets;
-      // score_tch/adv = sets won for backward compat display
       let tw = 0, aw = 0;
       sets.forEach(s => { if (s.tch > s.adv) tw++; else if (s.adv > s.tch) aw++; });
       scoreTch = tw;
@@ -562,6 +588,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       date: resultForm.date,
       sets: setsData,
       format: resultForm.categorie !== "interclub" ? "2sets_supertb" : null,
+      image_url: imageUrl,
     }).select().single();
 
     if (error) {
@@ -569,6 +596,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     } else if (data) {
       setResultats(prev => [data as ResultItem, ...prev]);
       setResultForm({ ...defaultResultForm });
+      setResultImage(null);
       setShowResultForm(false);
     }
     setCreatingResult(false);
@@ -578,6 +606,10 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     if (!editingResult) return;
     setCreatingResult(true);
     setResultError(null);
+
+    // Upload image if any
+    const imageUrl = await uploadResultImage();
+    if (imageUrl === "__error__") { setCreatingResult(false); return; }
 
     const resultat = computeResultat(resultForm);
     let setsData: SetScore[] | null = null;
@@ -609,6 +641,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       date: resultForm.date,
       sets: setsData,
       format: resultForm.categorie !== "interclub" ? "2sets_supertb" : null,
+      image_url: imageUrl,
     }).eq("id", editingResult.id).select().single();
 
     if (error) {
@@ -616,6 +649,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     } else if (data) {
       setResultats(prev => prev.map(r => r.id === editingResult.id ? data as ResultItem : r));
       setResultForm({ ...defaultResultForm });
+      setResultImage(null);
       setEditingResult(null);
       setShowResultForm(false);
     }
@@ -651,12 +685,14 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       }
     }
     setResultForm(f);
+    setResultImage(item.image_url ? { url: item.image_url } : null);
     setShowResultForm(true);
   }
 
   function cancelEditResult() {
     setEditingResult(null);
     setResultForm({ ...defaultResultForm });
+    setResultImage(null);
     setResultError(null);
     setShowResultForm(false);
   }
@@ -1435,6 +1471,49 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                   </div>
                 )}
 
+                {/* Photo */}
+                <div className="mb-4">
+                  <label className="block text-sm font-bold text-green-900 mb-2">Photo (optionnel)</label>
+                  <input
+                    ref={resultFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) setResultImage({ url: URL.createObjectURL(file), file });
+                      e.target.value = "";
+                    }}
+                  />
+                  {resultImage ? (
+                    <div className="relative inline-block">
+                      <Image
+                        src={resultImage.url}
+                        alt="Preview"
+                        width={160}
+                        height={100}
+                        className="rounded-lg object-cover w-40 h-24"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setResultImage(null)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => resultFileInputRef.current?.click()}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 text-sm text-gray-500 hover:border-green-600 hover:text-green-600 transition-colors"
+                    >
+                      <Upload size={16} />
+                      Ajouter une photo
+                    </button>
+                  )}
+                </div>
+
                 {/* Auto result badge */}
                 <div className="mb-4">
                   <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${resultatBadge[currentResultat].color}`}>
@@ -1448,11 +1527,11 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
                 <button
                   onClick={editingResult ? updateResultItem : createResultItem}
-                  disabled={creatingResult}
+                  disabled={creatingResult || uploadingResultImage}
                   className="px-6 py-2.5 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 transition-colors text-sm disabled:opacity-50 flex items-center gap-2"
                 >
-                  {creatingResult && <Loader2 size={16} className="animate-spin" />}
-                  {editingResult ? "Enregistrer" : "Créer le résultat"}
+                  {(creatingResult || uploadingResultImage) && <Loader2 size={16} className="animate-spin" />}
+                  {uploadingResultImage ? "Upload en cours..." : editingResult ? "Enregistrer" : "Créer le résultat"}
                 </button>
               </div>
             )}
