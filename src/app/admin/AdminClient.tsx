@@ -1306,23 +1306,17 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
               ))}
             </div>
           )}
-        </div>
-      </section>
 
-      {/* ── RÉSULTATS TAB ── */}
-      {activeTab === "resultats" && (
-        <section className="py-8">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-green-900">Résultats</h2>
-              <button
-                onClick={() => showResultForm ? cancelEditResult() : setShowResultForm(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-800 transition-colors"
-              >
-                {showResultForm ? <X size={16} /> : <Plus size={16} />}
-                {showResultForm ? "Annuler" : "Nouveau résultat"}
-              </button>
-            </div>
+          {/* ── RÉSULTATS TAB ── */}
+          {activeTab === "resultats" && (
+            <div className="space-y-3">
+          <button
+            onClick={() => showResultForm ? cancelEditResult() : setShowResultForm(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors text-sm"
+          >
+            {showResultForm ? <X size={16} /> : <Plus size={16} />}
+            {showResultForm ? "Annuler" : "Nouveau résultat"}
+          </button>
 
             {showResultForm && (
               <div className="bg-white rounded-2xl p-6 shadow-sm border mb-8">
@@ -1592,8 +1586,9 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
               )}
             </div>
           </div>
-        </section>
-      )}
+          )}
+        </div>
+      </section>
     </>
   );
 }
