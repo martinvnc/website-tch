@@ -346,10 +346,15 @@ export function HomeClient({ news, resultats, ticker }: Props) {
           { src: "/assets/partenaires/atelier-compote.png", alt: "Atelier Compote" },
         ];
         return (
-        <section className="py-10 bg-white border-t border-gray-100 overflow-hidden">
-          <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">
-            Nos partenaires
-          </p>
+        <section className="py-12 sm:py-14 overflow-hidden">
+          <div className="text-center mb-8 reveal">
+            <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
+              Ils nous soutiennent
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-green-900">
+              Nos partenaires
+            </h2>
+          </div>
           <div className="relative">
             <div className="flex animate-sponsors whitespace-nowrap">
               {[...logos, ...logos].map((l, i) => (
