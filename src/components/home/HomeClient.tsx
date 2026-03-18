@@ -339,24 +339,26 @@ export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
 
       {/* SPONSORS */}
       {sponsors.length > 0 && (
-        <section className="py-14 bg-white border-t border-gray-100">
+        <section className="py-14 bg-white border-t border-gray-100 overflow-hidden">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
             <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-8 reveal">
               Nos partenaires
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-10 reveal d1">
-              {sponsors.map((s) => (
+          </div>
+          <div className="relative">
+            <div className="flex animate-sponsors whitespace-nowrap">
+              {[...sponsors, ...sponsors].map((s, i) => (
                 <div
-                  key={s.id}
-                  className="flex items-center justify-center"
+                  key={`${s.id}-${i}`}
+                  className="flex-shrink-0 flex items-center justify-center mx-8 sm:mx-12"
                 >
                   {s.logo_url ? (
                     <Image
                       src={s.logo_url}
                       alt={s.nom}
-                      width={120}
-                      height={48}
-                      className="h-10 w-auto opacity-50 hover:opacity-100 transition-opacity duration-300"
+                      width={160}
+                      height={64}
+                      className="h-14 sm:h-16 w-auto opacity-60 hover:opacity-100 transition-opacity duration-300"
                     />
                   ) : (
                     <span className="text-sm font-medium text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-300 px-4 py-2">
@@ -367,6 +369,18 @@ export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
               ))}
             </div>
           </div>
+          <style jsx>{`
+            @keyframes sponsors-scroll {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-sponsors {
+              animation: sponsors-scroll 20s linear infinite;
+            }
+            .animate-sponsors:hover {
+              animation-play-state: paused;
+            }
+          `}</style>
         </section>
       )}
 
