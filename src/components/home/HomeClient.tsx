@@ -172,7 +172,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                 Les derni&egrave;res nouvelles du Tennis Club Halluin
               </p>
             </div>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {news.slice(0, 4).map((item, i) => {
                 const badge = categorieBadge[item.categorie] ?? categorieBadge.club;
                 return (
@@ -184,36 +184,36 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
                     {item.image_url && (() => {
                       const images = parseImageUrls(item.image_url);
                       return images.length > 0 ? (
-                        <NewsCarousel images={images} alt={item.titre} className="h-52 sm:h-60">
+                        <NewsCarousel images={images} alt={item.titre} className="h-40 sm:h-44">
                           <span
-                            className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold ${badge.bg} ${badge.text} rounded-full capitalize z-10`}
+                            className={`absolute top-3 left-3 px-2.5 py-0.5 text-[10px] font-semibold ${badge.bg} ${badge.text} rounded-full capitalize z-10`}
                           >
                             {item.categorie}
                           </span>
                         </NewsCarousel>
                       ) : null;
                     })()}
-                    <div className="p-6">
-                      <p className="text-xs text-muted-foreground mb-2">
+                    <div className="p-4">
+                      <p className="text-xs text-muted-foreground mb-1">
                         {new Date(item.date_publication).toLocaleDateString("fr-FR", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
                         })}
                       </p>
-                      <h3 className="text-lg font-bold text-green-900 leading-snug">
+                      <h3 className="text-sm font-bold text-green-900 leading-snug line-clamp-2">
                         {item.titre}
                       </h3>
                       {item.texte && (
                         <div
-                          className="mt-2 text-sm text-muted-foreground line-clamp-3 leading-relaxed prose prose-sm max-w-none"
+                          className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ __html: item.texte }}
                         />
                       )}
                       {item.cta_label && item.cta_url && (
-                        <span className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-sm font-bold bg-green-600 text-white group-hover:bg-green-800 transition-colors">
+                        <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full text-xs font-bold bg-green-600 text-white group-hover:bg-green-800 transition-colors">
                           {item.cta_label}
-                          <ArrowRight size={14} />
+                          <ArrowRight size={12} />
                         </span>
                       )}
                     </div>
