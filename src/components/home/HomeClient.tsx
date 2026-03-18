@@ -105,7 +105,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
           />
           <div className="absolute inset-0 bg-green-900/60" />
         </div>
-        <div className="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 py-16 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             {/* Texte */}
             <div className="text-center lg:text-left">
@@ -160,7 +160,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* NEWS */}
       {news.length > 0 && (
         <section className="pt-12 pb-12 sm:pt-14 sm:pb-14">
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
             <div className="text-center reveal">
               <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
                 Restez inform&eacute;s
@@ -237,7 +237,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* RÉSULTATS */}
       {resultats.length > 0 && (
         <section className="py-20 sm:py-28 bg-white">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
             <div className="text-center reveal">
               <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
                 Comp&eacute;titions
@@ -308,7 +308,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
 
       {/* TERRAINS */}
       <section className="py-20 sm:py-28">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
           <div className="text-center reveal">
             <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
               Nos infrastructures
@@ -359,7 +359,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
       {/* SPONSORS */}
       {sponsors.length > 0 && (
         <section className="py-14 bg-white border-t border-gray-100">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
             <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-8 reveal">
               Nos partenaires
             </p>
@@ -399,7 +399,7 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
             className="object-cover"
           />
         </div>
-        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
           <div className="max-w-2xl mx-auto reveal">
             <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-3">
               Rejoignez-nous

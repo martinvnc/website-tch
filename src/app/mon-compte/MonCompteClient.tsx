@@ -143,7 +143,7 @@ export function MonCompteClient({ profile: initialProfile, reservations: initial
   return (
     <>
       <section className="bg-green-900 text-white py-12">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold text-yellow-400">
               {profile.prenom?.[0]}{profile.nom?.[0]}
@@ -159,7 +159,7 @@ export function MonCompteClient({ profile: initialProfile, reservations: initial
       </section>
 
       <section className="py-8">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
           <div className="flex gap-1 border-b mb-6 overflow-x-auto">
             {tabs.map((tab) => (
               <button

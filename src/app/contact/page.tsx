@@ -44,7 +44,7 @@ export default function ContactPage() {
     <>
       {/* HERO */}
       <section className="bg-green-900 text-white py-16 sm:py-20">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
           <h1 className="font-display text-4xl sm:text-5xl">
             <span className="text-yellow-400">Contact</span>
           </h1>
@@ -55,7 +55,7 @@ export default function ContactPage() {
       </section>
 
       <section className="py-12 sm:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
             {/* Infos contact */}
             <div className="lg:col-span-2 space-y-5 reveal">

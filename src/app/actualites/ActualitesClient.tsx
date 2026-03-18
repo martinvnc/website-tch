@@ -49,7 +49,7 @@ export function ActualitesClient({ news }: { news: News[] }) {
     <>
       {/* HERO */}
       <section className="bg-green-900 text-white py-14 sm:py-20">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
           <p className="text-[#f6ca73] font-medium tracking-widest uppercase text-sm mb-3 reveal">
             Restez inform&eacute;s
           </p>
@@ -64,7 +64,7 @@ export function ActualitesClient({ news }: { news: News[] }) {
 
       {/* FILTRES + LISTE */}
       <section className="py-12 sm:py-16">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
           {/* Filtres */}
           <div className="flex flex-wrap gap-2 mb-10 reveal">
             {categories.map((cat) => (

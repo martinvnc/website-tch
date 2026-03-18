@@ -68,7 +68,7 @@ export function EntraineurClient({ groupes, seances }: Props) {
   return (
     <>
       <section className="bg-green-900 text-white py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
           <h1 className="text-2xl font-bold">Espace Entraîneur</h1>
           <p className="text-sm text-white/70 mt-1">
             {groupes.length} groupe{groupes.length > 1 ? "s" : ""} · {seances.length} séance{seances.length > 1 ? "s" : ""} à venir
@@ -77,7 +77,7 @@ export function EntraineurClient({ groupes, seances }: Props) {
       </section>
 
       <section className="py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
           <div className="flex gap-1 border-b mb-6 overflow-x-auto">
             {tabs.map((tab) => (
               <button

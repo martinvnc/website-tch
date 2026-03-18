@@ -39,7 +39,7 @@ export function ResultatsClient({ resultats }: { resultats: Resultat[] }) {
     <>
       {/* HERO */}
       <section className="bg-green-900 text-white py-16 sm:py-20">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
           <h1 className="font-display text-4xl sm:text-5xl">
             <span className="text-yellow-400">Résultats</span>
           </h1>
@@ -51,7 +51,7 @@ export function ResultatsClient({ resultats }: { resultats: Resultat[] }) {
 
       {/* FILTERS + RESULTS */}
       <section className="py-10 sm:py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
           {/* Filters */}
           <div className="reveal flex flex-wrap items-center gap-3 mb-8">
             <Filter size={16} className="text-muted-foreground" />
