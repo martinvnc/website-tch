@@ -66,7 +66,7 @@ const resultatStyle: Record<string, { icon: React.ReactNode; color: string; labe
   draw: { icon: <Minus size={16} />, color: "text-[#f6ca73]", label: "Nul" },
 };
 
-export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Props) {
+export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
   useReveal();
 
   return (
@@ -334,55 +334,6 @@ export function HomeClient({ news, resultats, ticker, sponsors, terrains }: Prop
         </section>
       )}
 
-      {/* TERRAINS */}
-      <section className="py-20 sm:py-28">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
-          <div className="text-center reveal">
-            <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
-              Nos infrastructures
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-green-900">
-              Nos installations
-            </h2>
-            <p className="mt-3 text-muted-foreground max-w-md mx-auto">
-              6 terrains indoor &amp; outdoor &agrave; votre disposition
-            </p>
-          </div>
-          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {terrains.map((court, i) => (
-              <div
-                key={court.id}
-                className={`reveal d${Math.min(i + 1, 4)} bg-white rounded-2xl p-6 card-hover shadow-sm border border-gray-100`}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-green-900">{court.nom}</h3>
-                  <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                      court.type === "indoor"
-                        ? "bg-green-600/10 text-green-600"
-                        : "bg-[#f6ca73]/30 text-green-900"
-                    }`}
-                  >
-                    {court.type === "indoor" ? "Indoor" : "Outdoor"}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {court.surface}
-                </p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-10 reveal">
-            <Link
-              href="/reservation"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors text-sm"
-            >
-              R&eacute;server un terrain
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* SPONSORS */}
       {sponsors.length > 0 && (

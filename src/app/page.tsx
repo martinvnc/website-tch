@@ -9,7 +9,6 @@ export default async function HomePage() {
     { data: resultats },
     { data: ticker },
     { data: sponsors },
-    { data: terrains },
   ] = await Promise.all([
     supabase
       .from("news")
@@ -32,11 +31,6 @@ export default async function HomePage() {
       .select("*")
       .eq("actif", true)
       .order("ordre"),
-    supabase
-      .from("terrains")
-      .select("*")
-      .eq("actif", true)
-      .order("ordre"),
   ]);
 
   return (
@@ -45,7 +39,6 @@ export default async function HomePage() {
       resultats={resultats ?? []}
       ticker={ticker ?? []}
       sponsors={sponsors ?? []}
-      terrains={terrains ?? []}
     />
   );
 }
