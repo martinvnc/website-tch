@@ -370,45 +370,6 @@ export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
         </section>
       )}
 
-      {/* CTA */}
-      <section className="relative py-24 sm:py-32 bg-green-900 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <Image
-            src="/assets/photos/club/hero-indoor-new.jpeg"
-            alt=""
-            fill
-            className="object-cover"
-          />
-        </div>
-        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
-          <div className="max-w-2xl mx-auto reveal">
-            <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-3">
-              Rejoignez-nous
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-              Rejoignez le <span className="text-[#f6ca73]">TCH</span>
-            </h2>
-            <p className="mt-4 text-lg text-white/70 max-w-lg mx-auto leading-relaxed">
-              Depuis 1927, le Tennis Club Halluin rassemble des passionn&eacute;s de
-              tous niveaux. Venez nous rencontrer !
-            </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
-              <Link
-                href="/contact"
-                className="px-7 py-3.5 rounded-full font-semibold bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] btn-primary transition-colors text-sm"
-              >
-                Nous contacter
-              </Link>
-              <Link
-                href="/connexion"
-                className="px-7 py-3.5 rounded-full font-semibold text-white hover:bg-white/10 transition-colors border border-white/30 text-sm"
-              >
-                Se connecter
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   );
 }
