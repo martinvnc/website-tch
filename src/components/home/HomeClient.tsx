@@ -338,18 +338,32 @@ export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
 
 
       {/* SPONSORS */}
-      {sponsors.length > 0 && (
+      {sponsors.length > 0 && (() => {
+        const localLogos: Record<string, string> = {
+          "script colors": "/assets/partenaires/script-colors.png",
+          "schelfhout": "/assets/partenaires/schelfhout.png",
+          "la cav'events": "/assets/partenaires/cavevents.png",
+          "cav'events": "/assets/partenaires/cavevents.png",
+          "lys vision": "/assets/partenaires/lys-vision.png",
+          "ville d'halluin": "/assets/partenaires/halluin.png",
+          "halluin": "/assets/partenaires/halluin.png",
+          "atelier compote": "/assets/partenaires/atelier-compote.png",
+        };
+        const getLogo = (s: Sponsor) => s.logo_url || localLogos[s.nom.toLowerCase()] || null;
+        return (
         <section className="py-10 bg-white border-t border-gray-100 overflow-hidden">
           <div className="relative">
             <div className="flex animate-sponsors whitespace-nowrap">
-              {[...sponsors, ...sponsors].map((s, i) => (
+              {[...sponsors, ...sponsors].map((s, i) => {
+                const logo = getLogo(s);
+                return (
                 <div
                   key={`${s.id}-${i}`}
                   className="flex-shrink-0 flex items-center justify-center mx-8 sm:mx-12"
                 >
-                  {s.logo_url ? (
+                  {logo ? (
                     <Image
-                      src={s.logo_url}
+                      src={logo}
                       alt={s.nom}
                       width={160}
                       height={64}
@@ -361,7 +375,8 @@ export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
                     </span>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           <style jsx>{`
@@ -377,7 +392,8 @@ export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
             }
           `}</style>
         </section>
-      )}
+        );
+      })()}
 
     </>
   );
