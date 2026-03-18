@@ -151,9 +151,19 @@ export function HomeClient({ news, resultats, ticker, sponsors }: Props) {
               </div>
             </div>
           </div>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 reveal d4">
+            <button
+              onClick={() => document.getElementById("content")?.scrollIntoView({ behavior: "smooth" })}
+              className="flex flex-col items-center gap-1 text-white/50 hover:text-white/80 transition-colors text-xs tracking-widest uppercase"
+            >
+              D&eacute;couvrir
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
         </div>
       </section>
 
+      <div id="content" />
       {/* NEWS */}
       {news.length > 0 && (
         <section className="pt-12 pb-12 sm:pt-14 sm:pb-14">
