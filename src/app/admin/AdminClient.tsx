@@ -2095,22 +2095,43 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
           </div>
 
           {/* Modal annuler une date */}
-          {showExceptionModal && (
+          {showExceptionModal && (() => {
+            const creneau = creneaux.find(c => c.id === showExceptionModal);
+            if (!creneau) return null;
+            // jour_semaine: 0=Lundi ... 6=Dimanche → JS: 1=Lundi ... 0=Dimanche
+            const jsDay = creneau.jour_semaine === 6 ? 0 : creneau.jour_semaine + 1;
+            const existingDates = new Set(exceptions.filter(e => e.creneau_id === creneau.id).map(e => e.date_annulee));
+            // Générer les 16 prochaines dates de ce jour
+            const upcoming: string[] = [];
+            const d = new Date(); d.setHours(0, 0, 0, 0);
+            while (upcoming.length < 16) {
+              if (d.getDay() === jsDay && !existingDates.has(d.toISOString().slice(0, 10))) {
+                upcoming.push(d.toISOString().slice(0, 10));
+              }
+              d.setDate(d.getDate() + 1);
+            }
+            return (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowExceptionModal(null)}>
               <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
                 <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                   <CalendarOff size={18} className="text-orange-500" />
-                  Annuler une date
+                  Annuler un {jourLabels[creneau.jour_semaine]}
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">Date à annuler</label>
-                    <input
-                      type="date"
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Quel {jourLabels[creneau.jour_semaine].toLowerCase()} annuler ?</label>
+                    <select
                       value={exceptionForm.date_annulee}
                       onChange={e => setExceptionForm(f => ({ ...f, date_annulee: e.target.value }))}
                       className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
-                    />
+                    >
+                      <option value="">Choisir une date...</option>
+                      {upcoming.map(date => (
+                        <option key={date} value={date}>
+                          {jourLabels[creneau.jour_semaine]} {new Date(date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">Raison (optionnel)</label>
@@ -2141,7 +2162,8 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
           </>)}
         </div>
       </section>
