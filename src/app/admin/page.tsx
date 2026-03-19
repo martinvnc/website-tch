@@ -35,6 +35,8 @@ export default async function AdminPage() {
     { data: news },
     { count: seancesCount },
     { data: resultats },
+    { data: creneauxTypes },
+    { data: creneaux },
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase.from("reservations").select("*", { count: "exact", head: true }).eq("statut", "confirmed"),
@@ -46,6 +48,8 @@ export default async function AdminPage() {
     supabase.from("news").select("*").order("created_at", { ascending: false }),
     supabase.from("seances").select("*", { count: "exact", head: true }).eq("statut", "planifiee"),
     supabase.from("resultats").select("*").order("date", { ascending: false }),
+    supabase.from("creneaux_types").select("*").order("nom"),
+    supabase.from("creneaux").select("*, creneaux_types(nom, couleur), terrains(nom)").order("jour_semaine").order("heure_debut"),
   ]);
 
   return (
@@ -61,6 +65,8 @@ export default async function AdminPage() {
       recentReservations={recentReservations ?? []}
       news={news ?? []}
       resultats={resultats ?? []}
+      creneauxTypes={creneauxTypes ?? []}
+      creneaux={creneaux ?? []}
     />
   );
 }

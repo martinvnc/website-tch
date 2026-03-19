@@ -17,9 +17,14 @@ export default async function ReservationPage() {
     .eq("actif", true)
     .order("ordre");
 
+  const { data: creneaux } = await supabase
+    .from("creneaux")
+    .select("*, creneaux_types(nom, couleur)")
+    .eq("recurrent", true);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return <ReservationClient terrains={terrains ?? []} isAuthenticated={!!user} />;
+  return <ReservationClient terrains={terrains ?? []} isAuthenticated={!!user} creneaux={creneaux ?? []} />;
 }

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Users, Calendar, MessageSquare, Key, Newspaper, BarChart3,
   GraduationCap, Loader2, Plus, X, ChevronDown, Eye, Trash2, ToggleLeft, ToggleRight,
-  Bold, Italic, Underline, Upload, ImageIcon, Pencil, Trophy,
+  Bold, Italic, Underline, Upload, ImageIcon, Pencil, Trophy, Clock, Palette,
 } from "lucide-react";
 import { parseImageUrls } from "@/lib/utils";
 
@@ -77,6 +77,27 @@ type ResultItem = {
   created_at: string;
 };
 
+type CreneauType = {
+  id: string;
+  nom: string;
+  couleur: string;
+  created_at: string;
+};
+
+type Creneau = {
+  id: string;
+  type_id: string;
+  terrain_id: string;
+  jour_semaine: number;
+  heure_debut: string;
+  heure_fin: string;
+  recurrent: boolean;
+  date_specifique: string | null;
+  creneaux_types: { nom: string; couleur: string } | null;
+  terrains: { nom: string } | null;
+  created_at: string;
+};
+
 type Props = {
   stats: Stats;
   codes: Code[];
@@ -84,6 +105,8 @@ type Props = {
   recentReservations: RecentReservation[];
   news: NewsItem[];
   resultats: ResultItem[];
+  creneauxTypes: CreneauType[];
+  creneaux: Creneau[];
 };
 
 const adminTabs = [
@@ -92,6 +115,7 @@ const adminTabs = [
   { id: "codes", label: "Codes accès", icon: <Key size={16} /> },
   { id: "news", label: "News", icon: <Newspaper size={16} /> },
   { id: "resultats", label: "Résultats", icon: <Trophy size={16} /> },
+  { id: "creneaux", label: "Créneaux", icon: <Clock size={16} /> },
 ];
 
 const statutColors: Record<string, string> = {
@@ -152,7 +176,7 @@ function computeResultat(form: typeof defaultResultForm): "win" | "loss" | "draw
   return "draw";
 }
 
-export function AdminClient({ stats, codes: initialCodes, recentTickets: initialTickets, recentReservations, news: initialNews, resultats: initialResultats }: Props) {
+export function AdminClient({ stats, codes: initialCodes, recentTickets: initialTickets, recentReservations, news: initialNews, resultats: initialResultats, creneauxTypes: initialCreneauxTypes, creneaux: initialCreneaux }: Props) {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [codes, setCodes] = useState(initialCodes);
   const [tickets, setTickets] = useState(initialTickets);
@@ -189,6 +213,29 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [resultImage, setResultImage] = useState<{ url: string; file?: File } | null>(null);
   const [uploadingResultImage, setUploadingResultImage] = useState(false);
   const resultFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Créneaux
+  const [cTypes, setCTypes] = useState(initialCreneauxTypes);
+  const [creneaux, setCreneaux] = useState(initialCreneaux);
+  const [showTypeForm, setShowTypeForm] = useState(false);
+  const [typeForm, setTypeForm] = useState({ nom: "", couleur: "#4c7650" });
+  const [creatingType, setCreatingType] = useState(false);
+  const [deletingType, setDeletingType] = useState<string | null>(null);
+  const [editingType, setEditingType] = useState<CreneauType | null>(null);
+  const [showCreneauForm, setShowCreneauForm] = useState(false);
+  const [creneauForm, setCreneauForm] = useState({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00" });
+  const [creatingCreneau, setCreatingCreneau] = useState(false);
+  const [deletingCreneau, setDeletingCreneau] = useState<string | null>(null);
+  const [terrainsList, setTerrainsList] = useState<{ id: string; nom: string }[]>([]);
+
+  // Fetch terrains for creneaux form
+  useEffect(() => {
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase.from("terrains").select("id, nom").order("nom");
+      setTerrainsList(data ?? []);
+    })();
+  }, []);
 
   // Rich text editor
   const editorRef = useRef<HTMLDivElement>(null);
@@ -695,6 +742,70 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     setResultImage(null);
     setResultError(null);
     setShowResultForm(false);
+  }
+
+  // ─── Créneaux CRUD ────────────────────────────────────
+  const jourLabels = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+  async function createCreneauType() {
+    if (!typeForm.nom.trim()) return;
+    setCreatingType(true);
+    const supabase = createClient();
+    const payload = editingType
+      ? { nom: typeForm.nom.trim(), couleur: typeForm.couleur }
+      : { nom: typeForm.nom.trim(), couleur: typeForm.couleur };
+
+    if (editingType) {
+      const { data, error } = await supabase.from("creneaux_types").update(payload).eq("id", editingType.id).select().single();
+      if (!error && data) {
+        setCTypes(prev => prev.map(t => t.id === data.id ? data : t));
+        // Update related creneaux display
+        setCreneaux(prev => prev.map(c => c.type_id === data.id ? { ...c, creneaux_types: { nom: data.nom, couleur: data.couleur } } : c));
+      }
+    } else {
+      const { data, error } = await supabase.from("creneaux_types").insert(payload).select().single();
+      if (!error && data) setCTypes(prev => [...prev, data]);
+    }
+    setTypeForm({ nom: "", couleur: "#4c7650" });
+    setEditingType(null);
+    setShowTypeForm(false);
+    setCreatingType(false);
+  }
+
+  async function deleteCreneauType(id: string) {
+    setDeletingType(id);
+    const supabase = createClient();
+    await supabase.from("creneaux_types").delete().eq("id", id);
+    setCTypes(prev => prev.filter(t => t.id !== id));
+    setCreneaux(prev => prev.filter(c => c.type_id !== id));
+    setDeletingType(null);
+  }
+
+  async function createCreneau() {
+    if (!creneauForm.type_id || !creneauForm.terrain_id) return;
+    setCreatingCreneau(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.from("creneaux").insert({
+      type_id: creneauForm.type_id,
+      terrain_id: creneauForm.terrain_id,
+      jour_semaine: creneauForm.jour_semaine,
+      heure_debut: creneauForm.heure_debut,
+      heure_fin: creneauForm.heure_fin,
+      recurrent: true,
+    }).select("*, creneaux_types(nom, couleur), terrains(nom)").single();
+
+    if (!error && data) setCreneaux(prev => [...prev, data]);
+    setCreneauForm({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00" });
+    setShowCreneauForm(false);
+    setCreatingCreneau(false);
+  }
+
+  async function deleteCreneau(id: string) {
+    setDeletingCreneau(id);
+    const supabase = createClient();
+    await supabase.from("creneaux").delete().eq("id", id);
+    setCreneaux(prev => prev.filter(c => c.id !== id));
+    setDeletingCreneau(null);
   }
 
   const currentResultat = computeResultat(resultForm);
@@ -1586,6 +1697,257 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
               {resultats.length === 0 && (
                 <p className="text-center text-sm text-gray-400 py-8">Aucun résultat pour le moment</p>
               )}
+            </div>
+          </div>
+          )}
+
+          {/* CRÉNEAUX */}
+          {activeTab === "creneaux" && (
+          <div className="space-y-6">
+            {/* ── Types de créneaux ── */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="font-bold text-green-900 flex items-center gap-2">
+                  <Palette size={16} /> Types de créneaux
+                </h3>
+                <button
+                  onClick={() => { setShowTypeForm(true); setEditingType(null); setTypeForm({ nom: "", couleur: "#4c7650" }); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-800 transition-colors"
+                >
+                  <Plus size={14} /> Ajouter un type
+                </button>
+              </div>
+
+              {showTypeForm && (
+                <div className="p-5 border-b border-gray-100 bg-gray-50">
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex-1 min-w-[200px]">
+                      <label className="block text-xs font-bold text-green-900 mb-1">Nom</label>
+                      <input
+                        type="text"
+                        value={typeForm.nom}
+                        onChange={e => setTypeForm(f => ({ ...f, nom: e.target.value }))}
+                        placeholder="Ex: Entraînement, Cours particulier..."
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-green-900 mb-1">Couleur</label>
+                      <input
+                        type="color"
+                        value={typeForm.couleur}
+                        onChange={e => setTypeForm(f => ({ ...f, couleur: e.target.value }))}
+                        className="w-12 h-10 rounded-lg border border-gray-200 cursor-pointer"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={createCreneauType}
+                        disabled={creatingType || !typeForm.nom.trim()}
+                        className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-800 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        {creatingType && <Loader2 size={14} className="animate-spin" />}
+                        {editingType ? "Modifier" : "Créer"}
+                      </button>
+                      <button
+                        onClick={() => { setShowTypeForm(false); setEditingType(null); }}
+                        className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                  {/* Preview */}
+                  {typeForm.nom.trim() && (
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Aperçu :</span>
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-bold text-white"
+                        style={{ backgroundColor: typeForm.couleur }}
+                      >
+                        {typeForm.nom}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="p-5">
+                {cTypes.length === 0 ? (
+                  <p className="text-center text-sm text-gray-400 py-4">Aucun type de créneau créé</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {cTypes.map(t => (
+                      <div key={t.id} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-100 bg-gray-50">
+                        <span
+                          className="w-4 h-4 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: t.couleur }}
+                        />
+                        <span className="text-sm font-bold text-green-900">{t.nom}</span>
+                        <button
+                          onClick={() => { setEditingType(t); setTypeForm({ nom: t.nom, couleur: t.couleur }); setShowTypeForm(true); }}
+                          className="p-1 rounded hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          onClick={() => deleteCreneauType(t.id)}
+                          disabled={deletingType === t.id}
+                          className="p-1 rounded hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                        >
+                          {deletingType === t.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Créneaux sur le planning ── */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="font-bold text-green-900 flex items-center gap-2">
+                  <Calendar size={16} /> Créneaux du planning
+                </h3>
+                {cTypes.length > 0 && terrainsList.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setShowCreneauForm(true);
+                      setCreneauForm({ type_id: cTypes[0]?.id ?? "", terrain_id: terrainsList[0]?.id ?? "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00" });
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-800 transition-colors"
+                  >
+                    <Plus size={14} /> Ajouter un créneau
+                  </button>
+                )}
+              </div>
+
+              {showCreneauForm && (
+                <div className="p-5 border-b border-gray-100 bg-gray-50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+                    <div>
+                      <label className="block text-xs font-bold text-green-900 mb-1">Type</label>
+                      <select
+                        value={creneauForm.type_id}
+                        onChange={e => setCreneauForm(f => ({ ...f, type_id: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                      >
+                        {cTypes.map(t => (
+                          <option key={t.id} value={t.id}>{t.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-green-900 mb-1">Terrain</label>
+                      <select
+                        value={creneauForm.terrain_id}
+                        onChange={e => setCreneauForm(f => ({ ...f, terrain_id: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                      >
+                        {terrainsList.map(t => (
+                          <option key={t.id} value={t.id}>{t.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-green-900 mb-1">Jour</label>
+                      <select
+                        value={creneauForm.jour_semaine}
+                        onChange={e => setCreneauForm(f => ({ ...f, jour_semaine: parseInt(e.target.value) }))}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                      >
+                        {jourLabels.map((j, i) => (
+                          <option key={i} value={i}>{j}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-green-900 mb-1">Début</label>
+                        <input
+                          type="time"
+                          value={creneauForm.heure_debut}
+                          onChange={e => setCreneauForm(f => ({ ...f, heure_debut: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-green-900 mb-1">Fin</label>
+                        <input
+                          type="time"
+                          value={creneauForm.heure_fin}
+                          onChange={e => setCreneauForm(f => ({ ...f, heure_fin: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={createCreneau}
+                        disabled={creatingCreneau}
+                        className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-800 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        {creatingCreneau && <Loader2 size={14} className="animate-spin" />}
+                        Ajouter
+                      </button>
+                      <button
+                        onClick={() => setShowCreneauForm(false)}
+                        className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-5">
+                {cTypes.length === 0 && (
+                  <p className="text-center text-sm text-gray-400 py-4">Créez d&apos;abord des types de créneaux ci-dessus</p>
+                )}
+                {cTypes.length > 0 && creneaux.length === 0 && (
+                  <p className="text-center text-sm text-gray-400 py-4">Aucun créneau placé sur le planning</p>
+                )}
+                {creneaux.length > 0 && (
+                  <div className="space-y-2">
+                    {jourLabels.map((jour, jourIdx) => {
+                      const jourCreneaux = creneaux.filter(c => c.jour_semaine === jourIdx);
+                      if (jourCreneaux.length === 0) return null;
+                      return (
+                        <div key={jourIdx}>
+                          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">{jour}</h4>
+                          <div className="space-y-1">
+                            {jourCreneaux.map(c => (
+                              <div key={c.id} className="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <span
+                                    className="px-2.5 py-0.5 rounded-full text-[11px] font-bold text-white"
+                                    style={{ backgroundColor: c.creneaux_types?.couleur ?? "#4c7650" }}
+                                  >
+                                    {c.creneaux_types?.nom ?? "?"}
+                                  </span>
+                                  <span className="text-sm text-gray-600">
+                                    {c.heure_debut.slice(0, 5)} — {c.heure_fin.slice(0, 5)}
+                                  </span>
+                                  <span className="text-xs text-gray-400">{c.terrains?.nom}</span>
+                                </div>
+                                <button
+                                  onClick={() => deleteCreneau(c.id)}
+                                  disabled={deletingCreneau === c.id}
+                                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                                >
+                                  {deletingCreneau === c.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           )}

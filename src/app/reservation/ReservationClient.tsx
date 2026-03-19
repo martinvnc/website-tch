@@ -27,11 +27,23 @@ type Reservation = {
   statut: string;
 };
 
+type CreneauSlot = {
+  id: string;
+  type_id: string;
+  terrain_id: string;
+  jour_semaine: number;
+  heure_debut: string;
+  heure_fin: string;
+  recurrent: boolean;
+  creneaux_types: { nom: string; couleur: string } | null;
+};
+
 type Member = { id: string; prenom: string; nom: string };
 
 type Props = {
   terrains: Terrain[];
   isAuthenticated: boolean;
+  creneaux: CreneauSlot[];
 };
 
 function getWeekDates(offset: number): Date[] {
@@ -62,7 +74,7 @@ function getSlots(ouverture: string, fermeture: string): string[] {
 const joursFr = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 const moisFr = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
 
-export function ReservationClient({ terrains, isAuthenticated }: Props) {
+export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props) {
   useReveal();
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedTerrain, setSelectedTerrain] = useState(terrains[0]?.id ?? "");
@@ -105,6 +117,20 @@ export function ReservationClient({ terrains, isAuthenticated }: Props) {
 
   function isSlotBooked(date: string, heure: string): boolean {
     return reservations.some((r) => r.date === date && r.heure_debut === heure + ":00");
+  }
+
+  // Map JS getDay (0=Sun) to our jour_semaine (0=Mon..6=Sun)
+  function getCreneauForSlot(date: Date, heure: string): CreneauSlot | null {
+    const jsDay = date.getDay(); // 0=Sun, 1=Mon...6=Sat
+    const jour = jsDay === 0 ? 6 : jsDay - 1; // Convert to 0=Mon..6=Sun
+    const heureH = parseInt(heure.split(":")[0]);
+    return creneaux.find(c => {
+      if (c.terrain_id !== selectedTerrain) return false;
+      if (c.jour_semaine !== jour) return false;
+      const cStart = parseInt(c.heure_debut.split(":")[0]);
+      const cEnd = parseInt(c.heure_fin.split(":")[0]);
+      return heureH >= cStart && heureH < cEnd;
+    }) ?? null;
   }
 
   async function openModal(date: string, heure: string) {
@@ -243,11 +269,24 @@ export function ReservationClient({ terrains, isAuthenticated }: Props) {
                         const dateStr = formatDate(d);
                         const booked = isSlotBooked(dateStr, slot);
                         const past = dateStr < today || (dateStr === today && parseInt(slot) <= new Date().getHours());
+                        const creneau = getCreneauForSlot(d, slot);
 
                         return (
                           <td key={dateStr + slot} className="p-1">
                             {past ? (
                               <div className="h-10 rounded-lg bg-gray-50" />
+                            ) : creneau ? (
+                              <div
+                                className="h-10 rounded-lg flex items-center justify-center"
+                                style={{ backgroundColor: (creneau.creneaux_types?.couleur ?? "#4c7650") + "22" }}
+                              >
+                                <span
+                                  className="text-[10px] font-bold truncate px-1"
+                                  style={{ color: creneau.creneaux_types?.couleur ?? "#4c7650" }}
+                                >
+                                  {creneau.creneaux_types?.nom ?? "Créneau"}
+                                </span>
+                              </div>
                             ) : booked ? (
                               <div className="h-10 rounded-lg bg-red-100 flex items-center justify-center">
                                 <span className="text-xs font-bold text-red-400">Réservé</span>
@@ -291,6 +330,13 @@ export function ReservationClient({ terrains, isAuthenticated }: Props) {
               <div className="w-4 h-4 rounded bg-gray-50 border border-gray-200" />
               <span className="text-muted-foreground">Passé</span>
             </div>
+            {/* Dynamic créneau type legends */}
+            {Array.from(new Map(creneaux.filter(c => c.terrain_id === selectedTerrain).map(c => [c.type_id, c.creneaux_types])).values()).map((ct, i) => ct && (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: ct.couleur + "33", border: `1px solid ${ct.couleur}55` }} />
+                <span className="text-muted-foreground">{ct.nom}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
