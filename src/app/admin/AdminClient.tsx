@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Users, Calendar, MessageSquare, Key, Newspaper, BarChart3,
   GraduationCap, Loader2, Plus, X, ChevronDown, Eye, Trash2, ToggleLeft, ToggleRight,
-  Bold, Italic, Underline, Upload, ImageIcon, Pencil, Trophy, Clock, Palette,
+  Bold, Italic, Underline, Upload, ImageIcon, Pencil, Trophy, Clock, Palette, CalendarOff, RotateCcw,
 } from "lucide-react";
 import { parseImageUrls } from "@/lib/utils";
 
@@ -228,13 +228,21 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [deletingCreneau, setDeletingCreneau] = useState<string | null>(null);
   const [editingCreneau, setEditingCreneau] = useState<Creneau | null>(null);
   const [terrainsList, setTerrainsList] = useState<{ id: string; nom: string }[]>([]);
+  const [exceptions, setExceptions] = useState<{ id: string; creneau_id: string; date_annulee: string; raison: string | null }[]>([]);
+  const [showExceptionModal, setShowExceptionModal] = useState<string | null>(null); // creneau_id
+  const [exceptionForm, setExceptionForm] = useState({ date_annulee: "", raison: "" });
+  const [savingException, setSavingException] = useState(false);
 
-  // Fetch terrains for creneaux form
+  // Fetch terrains + exceptions for creneaux form
   useEffect(() => {
     (async () => {
       const supabase = createClient();
-      const { data } = await supabase.from("terrains").select("id, nom").order("nom");
-      setTerrainsList(data ?? []);
+      const [{ data: terrainsData }, { data: exceptionsData }] = await Promise.all([
+        supabase.from("terrains").select("id, nom").order("nom"),
+        supabase.from("creneaux_exceptions").select("*").order("date_annulee", { ascending: true }),
+      ]);
+      setTerrainsList(terrainsData ?? []);
+      setExceptions(exceptionsData ?? []);
     })();
   }, []);
 
@@ -825,6 +833,27 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
     await supabase.from("creneaux").delete().eq("id", id);
     setCreneaux(prev => prev.filter(c => c.id !== id));
     setDeletingCreneau(null);
+  }
+
+  async function addException() {
+    if (!showExceptionModal || !exceptionForm.date_annulee) return;
+    setSavingException(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.from("creneaux_exceptions").insert({
+      creneau_id: showExceptionModal,
+      date_annulee: exceptionForm.date_annulee,
+      raison: exceptionForm.raison || null,
+    }).select("*").single();
+    if (!error && data) setExceptions(prev => [...prev, data]);
+    setExceptionForm({ date_annulee: "", raison: "" });
+    setShowExceptionModal(null);
+    setSavingException(false);
+  }
+
+  async function removeException(id: string) {
+    const supabase = createClient();
+    await supabase.from("creneaux_exceptions").delete().eq("id", id);
+    setExceptions(prev => prev.filter(e => e.id !== id));
   }
 
   const currentResultat = computeResultat(resultForm);
@@ -1721,7 +1750,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
           )}
 
           {/* CRÉNEAUX */}
-          {activeTab === "creneaux" && (
+          {activeTab === "creneaux" && (<>
           <div className="space-y-6">
             {/* ── Types de créneaux ── */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -1970,58 +1999,91 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                         <div key={jourIdx}>
                           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">{jour}</h4>
                           <div className="space-y-1">
-                            {jourCreneaux.map(c => (
-                              <div key={c.id} className="flex items-center justify-between px-3 py-2 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center gap-3">
-                                  <span
-                                    className="px-2.5 py-0.5 rounded-full text-[11px] font-bold text-white"
-                                    style={{ backgroundColor: c.creneaux_types?.couleur ?? "#4c7650" }}
-                                  >
-                                    {c.creneaux_types?.nom ?? "?"}
-                                  </span>
-                                  <span className="text-sm text-gray-600">
-                                    {c.heure_debut.slice(0, 5)} — {c.heure_fin.slice(0, 5)}
-                                  </span>
-                                  <span className="text-xs text-gray-400">{c.terrains?.nom}</span>
-                                  {c.recurrent ? (
-                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold">Chaque semaine</span>
-                                  ) : c.date_specifique ? (
-                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-bold">
-                                      {new Date(c.date_specifique).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                            {jourCreneaux.map(c => {
+                              const creneauExceptions = exceptions.filter(e => e.creneau_id === c.id);
+                              return (
+                              <div key={c.id} className="rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center justify-between px-3 py-2">
+                                  <div className="flex items-center gap-3 flex-wrap">
+                                    <span
+                                      className="px-2.5 py-0.5 rounded-full text-[11px] font-bold text-white"
+                                      style={{ backgroundColor: c.creneaux_types?.couleur ?? "#4c7650" }}
+                                    >
+                                      {c.creneaux_types?.nom ?? "?"}
                                     </span>
-                                  ) : null}
+                                    <span className="text-sm text-gray-600">
+                                      {c.heure_debut.slice(0, 5)} — {c.heure_fin.slice(0, 5)}
+                                    </span>
+                                    <span className="text-xs text-gray-400">{c.terrains?.nom}</span>
+                                    {c.recurrent ? (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold">Chaque semaine</span>
+                                    ) : c.date_specifique ? (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-bold">
+                                        {new Date(c.date_specifique).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                                      </span>
+                                    ) : null}
+                                    {creneauExceptions.length > 0 && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-bold">
+                                        {creneauExceptions.length} annulation{creneauExceptions.length > 1 ? "s" : ""}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    {c.recurrent && (
+                                      <button
+                                        onClick={() => { setShowExceptionModal(c.id); setExceptionForm({ date_annulee: "", raison: "" }); }}
+                                        className="p-1.5 rounded-lg hover:bg-orange-50 text-gray-400 hover:text-orange-600 transition-colors"
+                                        title="Annuler une date"
+                                      >
+                                        <CalendarOff size={14} />
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={() => {
+                                        setEditingCreneau(c);
+                                        setCreneauForm({
+                                          type_id: c.type_id,
+                                          terrain_id: c.terrain_id,
+                                          jour_semaine: c.jour_semaine,
+                                          heure_debut: c.heure_debut.slice(0, 5),
+                                          heure_fin: c.heure_fin.slice(0, 5),
+                                          recurrent: c.recurrent,
+                                          date_specifique: c.date_specifique ?? "",
+                                        });
+                                        setShowCreneauForm(true);
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors"
+                                      title="Modifier"
+                                    >
+                                      <Pencil size={14} />
+                                    </button>
+                                    <button
+                                      onClick={() => deleteCreneau(c.id)}
+                                      disabled={deletingCreneau === c.id}
+                                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                                      title="Supprimer"
+                                    >
+                                      {deletingCreneau === c.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                    </button>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    onClick={() => {
-                                      setEditingCreneau(c);
-                                      setCreneauForm({
-                                        type_id: c.type_id,
-                                        terrain_id: c.terrain_id,
-                                        jour_semaine: c.jour_semaine,
-                                        heure_debut: c.heure_debut.slice(0, 5),
-                                        heure_fin: c.heure_fin.slice(0, 5),
-                                        recurrent: c.recurrent,
-                                        date_specifique: c.date_specifique ?? "",
-                                      });
-                                      setShowCreneauForm(true);
-                                    }}
-                                    className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors"
-                                    title="Modifier"
-                                  >
-                                    <Pencil size={14} />
-                                  </button>
-                                  <button
-                                    onClick={() => deleteCreneau(c.id)}
-                                    disabled={deletingCreneau === c.id}
-                                    className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
-                                    title="Supprimer"
-                                  >
-                                    {deletingCreneau === c.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                  </button>
-                                </div>
+                                {creneauExceptions.length > 0 && (
+                                  <div className="px-3 pb-2 flex flex-wrap gap-1.5">
+                                    {creneauExceptions.map(ex => (
+                                      <span key={ex.id} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-medium">
+                                        <CalendarOff size={10} />
+                                        {new Date(ex.date_annulee).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                                        {ex.raison && <span className="text-red-400">({ex.raison})</span>}
+                                        <button onClick={() => removeException(ex.id)} className="hover:text-green-600 ml-0.5" title="Restaurer cette date">
+                                          <RotateCcw size={10} />
+                                        </button>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       );
@@ -2031,7 +2093,56 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
               </div>
             </div>
           </div>
+
+          {/* Modal annuler une date */}
+          {showExceptionModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowExceptionModal(null)}>
+              <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <CalendarOff size={18} className="text-orange-500" />
+                  Annuler une date
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Date à annuler</label>
+                    <input
+                      type="date"
+                      value={exceptionForm.date_annulee}
+                      onChange={e => setExceptionForm(f => ({ ...f, date_annulee: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">Raison (optionnel)</label>
+                    <input
+                      type="text"
+                      placeholder="ex: Vacances, Maladie, Férié..."
+                      value={exceptionForm.raison}
+                      onChange={e => setExceptionForm(f => ({ ...f, raison: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-5">
+                  <button
+                    onClick={addException}
+                    disabled={!exceptionForm.date_annulee || savingException}
+                    className="flex-1 px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  >
+                    {savingException && <Loader2 size={14} className="animate-spin" />}
+                    Annuler ce créneau
+                  </button>
+                  <button
+                    onClick={() => setShowExceptionModal(null)}
+                    className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
+          </>)}
         </div>
       </section>
     </>
