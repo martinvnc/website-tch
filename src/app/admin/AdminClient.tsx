@@ -1440,11 +1440,13 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                         onChange={e => setResultForm(f => ({ ...f, has_set3: e.target.checked }))}
                         className="rounded border-gray-300 text-green-600 focus:ring-green-600"
                       />
-                      <span className="text-sm text-gray-700">3ème set (super tie-break)</span>
+                      <span className="text-sm text-gray-700">
+                        {resultForm.categorie === "amical" ? "3ème set (super tie-break)" : "3ème set"}
+                      </span>
                     </label>
                     {resultForm.has_set3 && (
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-gray-500 w-12">Set 3</span>
+                        <span className="text-xs text-gray-500 w-12">{resultForm.categorie === "amical" ? "ST-B" : "Set 3"}</span>
                         <input
                           type="number"
                           min={0}
