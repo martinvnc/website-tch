@@ -226,6 +226,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [creneauForm, setCreneauForm] = useState({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "" });
   const [creatingCreneau, setCreatingCreneau] = useState(false);
   const [deletingCreneau, setDeletingCreneau] = useState<string | null>(null);
+  const [editingCreneau, setEditingCreneau] = useState<Creneau | null>(null);
   const [terrainsList, setTerrainsList] = useState<{ id: string; nom: string }[]>([]);
 
   // Fetch terrains for creneaux form
@@ -794,7 +795,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       jourSemaine = jsDay === 0 ? 6 : jsDay - 1;
     }
 
-    const { data, error } = await supabase.from("creneaux").insert({
+    const payload = {
       type_id: creneauForm.type_id,
       terrain_id: creneauForm.terrain_id,
       jour_semaine: jourSemaine,
@@ -802,10 +803,18 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       heure_fin: creneauForm.heure_fin,
       recurrent: creneauForm.recurrent,
       date_specifique: creneauForm.recurrent ? null : creneauForm.date_specifique,
-    }).select("*, creneaux_types(nom, couleur), terrains(nom)").single();
+    };
 
-    if (!error && data) setCreneaux(prev => [...prev, data]);
+    if (editingCreneau) {
+      const { data, error } = await supabase.from("creneaux").update(payload).eq("id", editingCreneau.id).select("*, creneaux_types(nom, couleur), terrains(nom)").single();
+      if (!error && data) setCreneaux(prev => prev.map(c => c.id === data.id ? data : c));
+    } else {
+      const { data, error } = await supabase.from("creneaux").insert(payload).select("*, creneaux_types(nom, couleur), terrains(nom)").single();
+      if (!error && data) setCreneaux(prev => [...prev, data]);
+    }
+
     setCreneauForm({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "" });
+    setEditingCreneau(null);
     setShowCreneauForm(false);
     setCreatingCreneau(false);
   }
@@ -1932,10 +1941,10 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                         className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-800 transition-colors disabled:opacity-50 flex items-center gap-1.5"
                       >
                         {creatingCreneau && <Loader2 size={14} className="animate-spin" />}
-                        Ajouter
+                        {editingCreneau ? "Modifier" : "Ajouter"}
                       </button>
                       <button
-                        onClick={() => setShowCreneauForm(false)}
+                        onClick={() => { setShowCreneauForm(false); setEditingCreneau(null); }}
                         className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors"
                       >
                         Annuler
@@ -1982,13 +1991,35 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                                     </span>
                                   ) : null}
                                 </div>
-                                <button
-                                  onClick={() => deleteCreneau(c.id)}
-                                  disabled={deletingCreneau === c.id}
-                                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
-                                >
-                                  {deletingCreneau === c.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                </button>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => {
+                                      setEditingCreneau(c);
+                                      setCreneauForm({
+                                        type_id: c.type_id,
+                                        terrain_id: c.terrain_id,
+                                        jour_semaine: c.jour_semaine,
+                                        heure_debut: c.heure_debut.slice(0, 5),
+                                        heure_fin: c.heure_fin.slice(0, 5),
+                                        recurrent: c.recurrent,
+                                        date_specifique: c.date_specifique ?? "",
+                                      });
+                                      setShowCreneauForm(true);
+                                    }}
+                                    className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition-colors"
+                                    title="Modifier"
+                                  >
+                                    <Pencil size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteCreneau(c.id)}
+                                    disabled={deletingCreneau === c.id}
+                                    className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                                    title="Supprimer"
+                                  >
+                                    {deletingCreneau === c.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>
