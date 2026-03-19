@@ -12,7 +12,6 @@ const navLinks = [
   { href: "/", label: "Accueil" },
   { href: "/le-club", label: "Le Club" },
   { href: "/reservation", label: "Réservation" },
-  { href: "/resultats", label: "Résultats" },
   { href: "/contact", label: "Contact" },
 ];
 
