@@ -223,7 +223,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [deletingType, setDeletingType] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<CreneauType | null>(null);
   const [showCreneauForm, setShowCreneauForm] = useState(false);
-  const [creneauForm, setCreneauForm] = useState({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00" });
+  const [creneauForm, setCreneauForm] = useState({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "" });
   const [creatingCreneau, setCreatingCreneau] = useState(false);
   const [deletingCreneau, setDeletingCreneau] = useState<string | null>(null);
   const [terrainsList, setTerrainsList] = useState<{ id: string; nom: string }[]>([]);
@@ -783,19 +783,29 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
 
   async function createCreneau() {
     if (!creneauForm.type_id || !creneauForm.terrain_id) return;
+    if (!creneauForm.recurrent && !creneauForm.date_specifique) return;
     setCreatingCreneau(true);
     const supabase = createClient();
+
+    // Si date spécifique, on calcule le jour_semaine à partir de la date
+    let jourSemaine = creneauForm.jour_semaine;
+    if (!creneauForm.recurrent && creneauForm.date_specifique) {
+      const jsDay = new Date(creneauForm.date_specifique).getDay();
+      jourSemaine = jsDay === 0 ? 6 : jsDay - 1;
+    }
+
     const { data, error } = await supabase.from("creneaux").insert({
       type_id: creneauForm.type_id,
       terrain_id: creneauForm.terrain_id,
-      jour_semaine: creneauForm.jour_semaine,
+      jour_semaine: jourSemaine,
       heure_debut: creneauForm.heure_debut,
       heure_fin: creneauForm.heure_fin,
-      recurrent: true,
+      recurrent: creneauForm.recurrent,
+      date_specifique: creneauForm.recurrent ? null : creneauForm.date_specifique,
     }).select("*, creneaux_types(nom, couleur), terrains(nom)").single();
 
     if (!error && data) setCreneaux(prev => [...prev, data]);
-    setCreneauForm({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00" });
+    setCreneauForm({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "" });
     setShowCreneauForm(false);
     setCreatingCreneau(false);
   }
@@ -1814,7 +1824,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                   <button
                     onClick={() => {
                       setShowCreneauForm(true);
-                      setCreneauForm({ type_id: cTypes[0]?.id ?? "", terrain_id: terrainsList[0]?.id ?? "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00" });
+                      setCreneauForm({ type_id: cTypes[0]?.id ?? "", terrain_id: terrainsList[0]?.id ?? "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "" });
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-800 transition-colors"
                   >
@@ -1824,7 +1834,25 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
               </div>
 
               {showCreneauForm && (
-                <div className="p-5 border-b border-gray-100 bg-gray-50">
+                <div className="p-5 border-b border-gray-100 bg-gray-50 space-y-4">
+                  {/* Récurrence toggle */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCreneauForm(f => ({ ...f, recurrent: true, date_specifique: "" }))}
+                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${creneauForm.recurrent ? "bg-green-600 text-white" : "bg-white text-green-900 border border-gray-200 hover:bg-green-50"}`}
+                    >
+                      Récurrent (chaque semaine)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCreneauForm(f => ({ ...f, recurrent: false }))}
+                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${!creneauForm.recurrent ? "bg-green-600 text-white" : "bg-white text-green-900 border border-gray-200 hover:bg-green-50"}`}
+                    >
+                      Date précise (ponctuel)
+                    </button>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
                     <div>
                       <label className="block text-xs font-bold text-green-900 mb-1">Type</label>
@@ -1850,18 +1878,33 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                         ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-green-900 mb-1">Jour</label>
-                      <select
-                        value={creneauForm.jour_semaine}
-                        onChange={e => setCreneauForm(f => ({ ...f, jour_semaine: parseInt(e.target.value) }))}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
-                      >
-                        {jourLabels.map((j, i) => (
-                          <option key={i} value={i}>{j}</option>
-                        ))}
-                      </select>
-                    </div>
+
+                    {/* Récurrent : sélecteur de jour / Ponctuel : date picker */}
+                    {creneauForm.recurrent ? (
+                      <div>
+                        <label className="block text-xs font-bold text-green-900 mb-1">Jour</label>
+                        <select
+                          value={creneauForm.jour_semaine}
+                          onChange={e => setCreneauForm(f => ({ ...f, jour_semaine: parseInt(e.target.value) }))}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                        >
+                          {jourLabels.map((j, i) => (
+                            <option key={i} value={i}>{j}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-xs font-bold text-green-900 mb-1">Date</label>
+                        <input
+                          type="date"
+                          value={creneauForm.date_specifique}
+                          onChange={e => setCreneauForm(f => ({ ...f, date_specifique: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                        />
+                      </div>
+                    )}
+
                     <div className="flex gap-2">
                       <div className="flex-1">
                         <label className="block text-xs font-bold text-green-900 mb-1">Début</label>
@@ -1885,7 +1928,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                     <div className="flex gap-2">
                       <button
                         onClick={createCreneau}
-                        disabled={creatingCreneau}
+                        disabled={creatingCreneau || (!creneauForm.recurrent && !creneauForm.date_specifique)}
                         className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-800 transition-colors disabled:opacity-50 flex items-center gap-1.5"
                       >
                         {creatingCreneau && <Loader2 size={14} className="animate-spin" />}
@@ -1931,6 +1974,13 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                                     {c.heure_debut.slice(0, 5)} — {c.heure_fin.slice(0, 5)}
                                   </span>
                                   <span className="text-xs text-gray-400">{c.terrains?.nom}</span>
+                                  {c.recurrent ? (
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold">Chaque semaine</span>
+                                  ) : c.date_specifique ? (
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-bold">
+                                      {new Date(c.date_specifique).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                                    </span>
+                                  ) : null}
                                 </div>
                                 <button
                                   onClick={() => deleteCreneau(c.id)}

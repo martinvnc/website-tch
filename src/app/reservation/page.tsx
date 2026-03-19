@@ -19,8 +19,7 @@ export default async function ReservationPage() {
 
   const { data: creneaux } = await supabase
     .from("creneaux")
-    .select("*, creneaux_types(nom, couleur)")
-    .eq("recurrent", true);
+    .select("*, creneaux_types(nom, couleur)");
 
   const {
     data: { user },

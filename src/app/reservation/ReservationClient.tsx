@@ -35,6 +35,7 @@ type CreneauSlot = {
   heure_debut: string;
   heure_fin: string;
   recurrent: boolean;
+  date_specifique: string | null;
   creneaux_types: { nom: string; couleur: string } | null;
 };
 
@@ -124,12 +125,20 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
     const jsDay = date.getDay(); // 0=Sun, 1=Mon...6=Sat
     const jour = jsDay === 0 ? 6 : jsDay - 1; // Convert to 0=Mon..6=Sun
     const heureH = parseInt(heure.split(":")[0]);
+    const dateStr = formatDate(date);
+
     return creneaux.find(c => {
       if (c.terrain_id !== selectedTerrain) return false;
-      if (c.jour_semaine !== jour) return false;
       const cStart = parseInt(c.heure_debut.split(":")[0]);
       const cEnd = parseInt(c.heure_fin.split(":")[0]);
-      return heureH >= cStart && heureH < cEnd;
+      if (heureH < cStart || heureH >= cEnd) return false;
+
+      // Ponctuel : match sur la date exacte
+      if (!c.recurrent && c.date_specifique) {
+        return c.date_specifique === dateStr;
+      }
+      // Récurrent : match sur le jour de la semaine
+      return c.jour_semaine === jour;
     }) ?? null;
   }
 
