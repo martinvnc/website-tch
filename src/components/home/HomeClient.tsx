@@ -381,9 +381,6 @@ export function HomeClient({ news, resultats, ticker }: Props) {
             .animate-sponsors {
               animation: sponsors-scroll 20s linear infinite;
             }
-            .animate-sponsors:hover {
-              animation-play-state: paused;
-            }
           `}</style>
         </section>
         );
