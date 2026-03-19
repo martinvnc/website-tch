@@ -1866,7 +1866,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                   <button
                     onClick={() => {
                       setShowCreneauForm(true);
-                      setCreneauForm({ type_id: cTypes[0]?.id ?? "", terrain_id: terrainsList[0]?.id ?? "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "" });
+                      setCreneauForm({ type_id: cTypes[0]?.id ?? "", terrain_id: terrainsList[0]?.id ?? "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "", date_debut: "", date_fin: "" });
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-800 transition-colors"
                   >
