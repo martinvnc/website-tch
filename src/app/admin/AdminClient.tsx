@@ -1935,8 +1935,8 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                           ))}
                         </select>
                       </div>
-                      <div className="flex gap-2">
-                        <div className="flex-1">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
                           <label className="block text-xs font-bold text-green-900 mb-1">Début récurrence</label>
                           <input
                             type="date"
@@ -1945,7 +1945,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                             className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
                           />
                         </div>
-                        <div className="flex-1">
+                        <div>
                           <label className="block text-xs font-bold text-green-900 mb-1">Fin récurrence</label>
                           <input
                             type="date"
