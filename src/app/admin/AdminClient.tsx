@@ -93,6 +93,8 @@ type Creneau = {
   heure_fin: string;
   recurrent: boolean;
   date_specifique: string | null;
+  date_debut: string | null;
+  date_fin: string | null;
   creneaux_types: { nom: string; couleur: string } | null;
   terrains: { nom: string } | null;
   created_at: string;
@@ -223,7 +225,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
   const [deletingType, setDeletingType] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<CreneauType | null>(null);
   const [showCreneauForm, setShowCreneauForm] = useState(false);
-  const [creneauForm, setCreneauForm] = useState({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "" });
+  const [creneauForm, setCreneauForm] = useState({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "", date_debut: "", date_fin: "" });
   const [creatingCreneau, setCreatingCreneau] = useState(false);
   const [deletingCreneau, setDeletingCreneau] = useState<string | null>(null);
   const [editingCreneau, setEditingCreneau] = useState<Creneau | null>(null);
@@ -811,6 +813,8 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       heure_fin: creneauForm.heure_fin,
       recurrent: creneauForm.recurrent,
       date_specifique: creneauForm.recurrent ? null : creneauForm.date_specifique,
+      date_debut: creneauForm.recurrent && creneauForm.date_debut ? creneauForm.date_debut : null,
+      date_fin: creneauForm.recurrent && creneauForm.date_fin ? creneauForm.date_fin : null,
     };
 
     if (editingCreneau) {
@@ -821,7 +825,7 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
       if (!error && data) setCreneaux(prev => [...prev, data]);
     }
 
-    setCreneauForm({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "" });
+    setCreneauForm({ type_id: "", terrain_id: "", jour_semaine: 0, heure_debut: "09:00", heure_fin: "10:00", recurrent: true, date_specifique: "", date_debut: "", date_fin: "" });
     setEditingCreneau(null);
     setShowCreneauForm(false);
     setCreatingCreneau(false);
@@ -1917,8 +1921,8 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                       </select>
                     </div>
 
-                    {/* Récurrent : sélecteur de jour / Ponctuel : date picker */}
-                    {creneauForm.recurrent ? (
+                    {/* Récurrent : sélecteur de jour + période / Ponctuel : date picker */}
+                    {creneauForm.recurrent ? (<>
                       <div>
                         <label className="block text-xs font-bold text-green-900 mb-1">Jour</label>
                         <select
@@ -1931,7 +1935,27 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                           ))}
                         </select>
                       </div>
-                    ) : (
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <label className="block text-xs font-bold text-green-900 mb-1">Début récurrence</label>
+                          <input
+                            type="date"
+                            value={creneauForm.date_debut}
+                            onChange={e => setCreneauForm(f => ({ ...f, date_debut: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-xs font-bold text-green-900 mb-1">Fin récurrence</label>
+                          <input
+                            type="date"
+                            value={creneauForm.date_fin}
+                            onChange={e => setCreneauForm(f => ({ ...f, date_fin: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-600/30"
+                          />
+                        </div>
+                      </div>
+                    </>) : (
                       <div>
                         <label className="block text-xs font-bold text-green-900 mb-1">Date</label>
                         <input
@@ -2015,9 +2039,14 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                                       {c.heure_debut.slice(0, 5)} — {c.heure_fin.slice(0, 5)}
                                     </span>
                                     <span className="text-xs text-gray-400">{c.terrains?.nom}</span>
-                                    {c.recurrent ? (
+                                    {c.recurrent ? (<>
                                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold">Chaque semaine</span>
-                                    ) : c.date_specifique ? (
+                                      {(c.date_debut || c.date_fin) && (
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-bold">
+                                          {c.date_debut ? new Date(c.date_debut).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "..."} → {c.date_fin ? new Date(c.date_fin).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "..."}
+                                        </span>
+                                      )}
+                                    </>) : c.date_specifique ? (
                                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-bold">
                                         {new Date(c.date_specifique).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                                       </span>
@@ -2049,6 +2078,8 @@ export function AdminClient({ stats, codes: initialCodes, recentTickets: initial
                                           heure_fin: c.heure_fin.slice(0, 5),
                                           recurrent: c.recurrent,
                                           date_specifique: c.date_specifique ?? "",
+                                          date_debut: c.date_debut ?? "",
+                                          date_fin: c.date_fin ?? "",
                                         });
                                         setShowCreneauForm(true);
                                       }}
