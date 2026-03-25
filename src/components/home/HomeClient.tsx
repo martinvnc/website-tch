@@ -65,8 +65,8 @@ export function HomeClient({ news, resultats, ticker }: Props) {
       {ticker.length > 0 && (
         <div className="bg-green-600 text-white overflow-hidden">
           <div className="ticker-track flex whitespace-nowrap animate-ticker" style={{ width: "max-content" }}>
-            {[...ticker, ...ticker, ...ticker, ...ticker].map((item, i) => (
-              <span key={i} className="inline-block px-8 py-1 text-[11px] font-medium tracking-wide">
+            {Array.from({ length: 10 }, () => ticker).flat().map((item, i) => (
+              <span key={i} className="inline-block px-8 py-1 text-[11px] font-medium tracking-wide leading-normal">
                 {item.texte}
                 <span className="ml-6 text-[#f6ca73]">&bull;</span>
               </span>
@@ -78,11 +78,11 @@ export function HomeClient({ news, resultats, ticker }: Props) {
               100% { transform: translateX(-50%); }
             }
             .animate-ticker {
-              animation: ticker 15s linear infinite;
+              animation: ticker 40s linear infinite;
             }
             @media (min-width: 768px) {
               .animate-ticker {
-                animation: ticker 30s linear infinite;
+                animation: ticker 60s linear infinite;
               }
             }
           `}</style>
@@ -240,29 +240,29 @@ export function HomeClient({ news, resultats, ticker }: Props) {
 
       {/* RÉSULTATS */}
       {resultats.length > 0 && (
-        <section className="pt-12 pb-12 sm:pt-14 sm:pb-14 bg-white">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
+        <section className="pt-12 pb-12 sm:pt-14 sm:pb-14 bg-green-900 text-white">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
             <div className="text-center reveal">
               <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
                 Comp&eacute;titions
               </p>
-              <h2 className="text-2xl sm:text-3xl font-bold text-green-900">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">
                 Derniers r&eacute;sultats
               </h2>
-              <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+              <p className="mt-2 text-sm text-white/60 max-w-md mx-auto">
                 Les performances r&eacute;centes de nos &eacute;quipes
               </p>
             </div>
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="mt-8 flex flex-col gap-3">
               {resultats.map((r, i) => {
                 const style = resultatStyle[r.resultat] ?? resultatStyle.draw;
                 return (
                   <div
                     key={r.id}
-                    className={`reveal d${Math.min(i + 1, 4)} bg-[#f7f5f0] rounded-2xl overflow-hidden card-hover border border-gray-100`}
+                    className={`reveal d${Math.min(i + 1, 4)} flex items-stretch bg-[#f7f5f0] rounded-xl overflow-hidden hover:bg-[#eeece7] transition-colors`}
                   >
                     {r.image_url && (
-                      <div className="relative w-full h-32">
+                      <div className="relative w-24 sm:w-32 flex-shrink-0">
                         <Image
                           src={r.image_url}
                           alt={`${r.equipe_tch} vs ${r.equipe_adversaire}`}
@@ -271,23 +271,29 @@ export function HomeClient({ news, resultats, ticker }: Props) {
                         />
                       </div>
                     )}
-                    <div className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {r.competition}
-                      </span>
-                      <span className={`flex items-center gap-1 text-xs font-semibold ${style.color}`}>
-                        {style.icon} {style.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex-1 flex items-center px-4 sm:px-6 py-4 gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-semibold text-green-900/40 uppercase tracking-wider truncate">
+                            {r.competition}
+                          </span>
+                          <span className={`flex items-center gap-1 text-[10px] font-semibold flex-shrink-0 ${
+                            r.resultat === 'win' ? 'text-emerald-600' : r.resultat === 'loss' ? 'text-red-500' : 'text-amber-500'
+                          }`}>
+                            {style.icon} {style.label}
+                          </span>
+                        </div>
                         <p className="font-bold text-green-900">{r.equipe_tch}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {r.equipe_adversaire}
+                        <p className="text-sm text-green-900/50">{r.equipe_adversaire}</p>
+                        <p className="mt-1 text-[11px] text-green-900/30">
+                          {new Date(r.date).toLocaleDateString("fr-FR", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
                         </p>
                       </div>
-                      <div className="text-right">
+                      <div className="flex-shrink-0">
                         {r.sets && r.sets.length > 0 ? (
                           <div className="flex items-center gap-1.5">
                             {r.sets.map((s, si) => (
@@ -297,25 +303,17 @@ export function HomeClient({ news, resultats, ticker }: Props) {
                             ))}
                           </div>
                         ) : (
-                          <>
-                            <span className="text-2xl font-bold text-green-900">
+                          <div className="flex items-center">
+                            <span className="text-3xl sm:text-4xl font-bold text-green-900">
                               {r.score_tch}
                             </span>
-                            <span className="mx-1.5 text-muted-foreground">-</span>
-                            <span className="text-2xl font-bold text-muted-foreground">
+                            <span className="mx-1.5 text-green-900/30 text-lg">:</span>
+                            <span className="text-3xl sm:text-4xl font-bold text-green-900/40">
                               {r.score_adv}
                             </span>
-                          </>
+                          </div>
                         )}
                       </div>
-                    </div>
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      {new Date(r.date).toLocaleDateString("fr-FR", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
                     </div>
                   </div>
                 );
@@ -324,7 +322,7 @@ export function HomeClient({ news, resultats, ticker }: Props) {
             <div className="text-center mt-10 reveal">
               <Link
                 href="/resultats"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold bg-green-600 text-white hover:bg-green-800 btn-primary transition-colors text-sm"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] transition-colors text-sm"
               >
                 Tous les r&eacute;sultats
                 <ArrowRight size={16} />
@@ -346,8 +344,8 @@ export function HomeClient({ news, resultats, ticker }: Props) {
           { src: "/assets/partenaires/atelier-compote.png", alt: "Atelier Compote" },
         ];
         return (
-        <section className="py-12 sm:py-14 overflow-hidden">
-          <div className="text-center mb-8 reveal">
+        <section className="py-12 sm:py-14">
+          <div className="text-center mb-8">
             <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
               Ils nous soutiennent
             </p>
@@ -355,12 +353,12 @@ export function HomeClient({ news, resultats, ticker }: Props) {
               Nos partenaires
             </h2>
           </div>
-          <div className="relative">
+          <div className="relative overflow-hidden">
             <div className="flex animate-sponsors whitespace-nowrap">
-              {[...logos, ...logos].map((l, i) => (
+              {Array.from({ length: 4 }, () => logos).flat().map((l, i) => (
                 <div
                   key={`${l.alt}-${i}`}
-                  className="flex-shrink-0 flex items-center justify-center mx-8 sm:mx-12"
+                  className="flex-shrink-0 flex items-center justify-center mx-12 sm:mx-20"
                 >
                   <Image
                     src={l.src}
@@ -379,7 +377,7 @@ export function HomeClient({ news, resultats, ticker }: Props) {
               100% { transform: translateX(-50%); }
             }
             .animate-sponsors {
-              animation: sponsors-scroll 20s linear infinite;
+              animation: sponsors-scroll 30s linear infinite;
             }
           `}</style>
         </section>
