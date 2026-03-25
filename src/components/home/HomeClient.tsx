@@ -56,6 +56,75 @@ const resultatStyle: Record<string, { icon: React.ReactNode; color: string; labe
   draw: { icon: <Minus size={16} />, color: "text-[#f6ca73]", label: "Nul" },
 };
 
+function ResultatsSection({ resultats }: { resultats: Resultat[] }) {
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+
+  return (
+    <section className="pt-12 pb-12 sm:pt-14 sm:pb-14 bg-green-900 text-white">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
+        <div className="text-center reveal">
+          <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">Compétitions</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">Derniers résultats</h2>
+          <p className="mt-2 text-sm text-white/60 max-w-md mx-auto">Les performances récentes de nos équipes</p>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+          {resultats.map((r, i) => {
+            const style = resultatStyle[r.resultat] ?? resultatStyle.draw;
+            return (
+              <div key={r.id} className={`reveal d${Math.min(i + 1, 4)} relative rounded-2xl overflow-hidden group h-52`}>
+                {r.image_url ? (
+                  <Image src={r.image_url} alt="" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                ) : (
+                  <div className="absolute inset-0 bg-green-800" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+                <div className="relative h-full flex flex-col justify-between p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-white/60 uppercase tracking-wider">{r.competition}</span>
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide ${style.color}`}>
+                      {style.icon} {style.label}
+                    </span>
+                  </div>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="font-bold text-white">{r.equipe_tch}</p>
+                      <p className="text-sm text-white/50">{r.equipe_adversaire}</p>
+                      <p className="text-[11px] text-white/30 mt-1">{formatDate(r.date)}</p>
+                    </div>
+                    <div className="text-white">
+                      {r.sets && r.sets.length > 0 ? (
+                        <div className="flex items-center gap-1.5">
+                          {r.sets.map((s, si) => (
+                            <span key={si} className="text-lg font-bold">{s.tch}-{s.adv}</span>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <span className="text-3xl sm:text-4xl font-black">{r.score_tch}</span>
+                          <span className="mx-2 text-lg opacity-40">:</span>
+                          <span className="text-3xl sm:text-4xl font-black opacity-40">{r.score_adv}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="text-center mt-10 reveal">
+          <Link href="/resultats" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] transition-colors text-sm">
+            Tous les résultats <ArrowRight size={16} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function HomeClient({ news, resultats, ticker }: Props) {
   useReveal();
 
@@ -138,7 +207,7 @@ export function HomeClient({ news, resultats, ticker }: Props) {
 
             {/* Photo — hidden on mobile */}
             <div className="hidden lg:block reveal d2">
-              <div className="relative rounded-2xl overflow-hidden aspect-[16/10] shadow-2xl">
+              <div className="relative rounded-lg overflow-hidden aspect-[16/10] shadow-2xl">
                 <Image
                   src="/assets/photos/club/hero-indoor-new.jpeg"
                   alt="Courts du Tennis Club Halluin"
@@ -184,7 +253,7 @@ export function HomeClient({ news, resultats, ticker }: Props) {
                   <Link
                     key={item.id}
                     href="/actualites"
-                    className={`reveal d${Math.min(i + 1, 4)} group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100 block`}
+                    className={`reveal d${Math.min(i + 1, 4)} group bg-white rounded-lg overflow-hidden shadow-sm card-hover border border-gray-100 block`}
                   >
                     {item.image_url && (() => {
                       const images = parseImageUrls(item.image_url);
@@ -239,98 +308,7 @@ export function HomeClient({ news, resultats, ticker }: Props) {
       )}
 
       {/* RÉSULTATS */}
-      {resultats.length > 0 && (
-        <section className="pt-12 pb-12 sm:pt-14 sm:pb-14 bg-green-900 text-white">
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
-            <div className="text-center reveal">
-              <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
-                Comp&eacute;titions
-              </p>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                Derniers r&eacute;sultats
-              </h2>
-              <p className="mt-2 text-sm text-white/60 max-w-md mx-auto">
-                Les performances r&eacute;centes de nos &eacute;quipes
-              </p>
-            </div>
-            <div className="mt-8 flex flex-col gap-3">
-              {resultats.map((r, i) => {
-                const style = resultatStyle[r.resultat] ?? resultatStyle.draw;
-                return (
-                  <div
-                    key={r.id}
-                    className={`reveal d${Math.min(i + 1, 4)} flex items-stretch bg-[#f7f5f0] rounded-xl overflow-hidden hover:bg-[#eeece7] transition-colors`}
-                  >
-                    {r.image_url && (
-                      <div className="relative w-24 sm:w-32 flex-shrink-0">
-                        <Image
-                          src={r.image_url}
-                          alt={`${r.equipe_tch} vs ${r.equipe_adversaire}`}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1 flex items-center px-4 sm:px-6 py-4 gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] font-semibold text-green-900/40 uppercase tracking-wider truncate">
-                            {r.competition}
-                          </span>
-                          <span className={`flex items-center gap-1 text-[10px] font-semibold flex-shrink-0 ${
-                            r.resultat === 'win' ? 'text-emerald-600' : r.resultat === 'loss' ? 'text-red-500' : 'text-amber-500'
-                          }`}>
-                            {style.icon} {style.label}
-                          </span>
-                        </div>
-                        <p className="font-bold text-green-900">{r.equipe_tch}</p>
-                        <p className="text-sm text-green-900/50">{r.equipe_adversaire}</p>
-                        <p className="mt-1 text-[11px] text-green-900/30">
-                          {new Date(r.date).toLocaleDateString("fr-FR", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        {r.sets && r.sets.length > 0 ? (
-                          <div className="flex items-center gap-1.5">
-                            {r.sets.map((s, si) => (
-                              <span key={si} className="text-lg font-bold text-green-900">
-                                {s.tch}-{s.adv}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex items-center">
-                            <span className="text-3xl sm:text-4xl font-bold text-green-900">
-                              {r.score_tch}
-                            </span>
-                            <span className="mx-1.5 text-green-900/30 text-lg">:</span>
-                            <span className="text-3xl sm:text-4xl font-bold text-green-900/40">
-                              {r.score_adv}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="text-center mt-10 reveal">
-              <Link
-                href="/resultats"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold bg-[#f6ca73] text-green-900 hover:bg-[#f5c060] transition-colors text-sm"
-              >
-                Tous les r&eacute;sultats
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
+      {resultats.length > 0 && <ResultatsSection resultats={resultats} />}
 
 
       {/* SPONSORS */}
