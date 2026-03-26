@@ -35,7 +35,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
           />
         </div>
         <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 py-20 sm:py-28 text-center">
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl">
+          <h1 className="font-sans font-bold text-4xl sm:text-5xl lg:text-6xl">
             Le <span className="text-yellow-400">Club</span>
           </h1>
           <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
@@ -54,11 +54,13 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
               { icon: <Clock size={24} />, title: "Horaires", desc: "Sem. 9h–22h · Week-end 9h–20h" },
               { icon: <Award size={24} />, title: "Label", desc: "École de Tennis FFT" },
             ].map((item, i) => (
-              <div key={i} className={`reveal d${i + 1} flex items-start gap-4 p-5 rounded-xl bg-off-white`}>
-                <div className="text-green-600 mt-0.5">{item.icon}</div>
+              <div key={i} className={`reveal d${i + 1} flex items-start gap-4 p-6 rounded-xl bg-green-900 text-white shadow-lg`}>
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center text-yellow-400 mt-0.5">
+                  {item.icon}
+                </div>
                 <div>
-                  <h3 className="font-bold text-green-900">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                  <h3 className="font-bold text-white">{item.title}</h3>
+                  <p className="text-sm text-white/70">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -90,7 +92,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
                 src="/assets/photos/club/IMG_6488 (1).JPEG"
                 alt="Tennis Club Halluin"
                 fill
-                className="object-cover"
+                className="object-cover rotate-90 scale-[1.8]"
               />
             </div>
           </div>
@@ -107,6 +109,8 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
             <div className="mt-10 relative">
               {/* Vertical line */}
               <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-0.5 bg-yellow-400 sm:-translate-x-0.5" />
+              {/* Top dot */}
+              <div className="absolute left-4 sm:left-1/2 top-0 w-3 h-3 bg-yellow-400 rounded-full -translate-x-1 sm:-translate-x-1.5 z-10 ring-4 ring-white" />
 
               {timeline.map((item, i) => (
                 <div
@@ -116,7 +120,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
                   }`}
                 >
                   {/* Dot */}
-                  <div className="absolute left-4 sm:left-1/2 w-3 h-3 bg-yellow-400 rounded-full -translate-x-1 sm:-translate-x-1.5 mt-1.5 z-10 ring-4 ring-white" />
+                  <div className="absolute left-4 sm:left-1/2 bottom-0 w-3 h-3 bg-yellow-400 rounded-full -translate-x-1 sm:-translate-x-1.5 z-10 ring-4 ring-white" />
 
                   {/* Content */}
                   <div className={`ml-10 sm:ml-0 sm:w-5/12 ${i % 2 === 0 ? "sm:pr-10 sm:text-right" : "sm:pl-10"}`}>
