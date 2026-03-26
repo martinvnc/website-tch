@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useReveal } from "@/hooks/useReveal";
-import { MapPin, Clock, Award } from "lucide-react";
 
 type Timeline = { id: string; annee: number; titre: string; description: string | null };
 type Comite = { id: string; prenom: string; nom: string; role: string; photo_url: string | null };
@@ -34,7 +33,7 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
             priority
           />
         </div>
-        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 py-20 sm:py-28 text-center">
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 py-12 sm:py-16 text-center">
           <h1 className="font-sans font-bold text-4xl sm:text-5xl lg:text-6xl">
             Le <span className="text-yellow-400">Club</span>
           </h1>
@@ -45,28 +44,6 @@ export function LeClubClient({ timeline, comite, terrains, sponsors, galerie }: 
         </div>
       </section>
 
-      {/* INFOS RAPIDES */}
-      <section className="py-12 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              { icon: <MapPin size={24} />, title: "Adresse", desc: "341 rue de la Lys, 59250 Halluin" },
-              { icon: <Clock size={24} />, title: "Horaires", desc: "Sem. 9h–22h · Week-end 9h–20h" },
-              { icon: <Award size={24} />, title: "Label", desc: "École de Tennis FFT" },
-            ].map((item, i) => (
-              <div key={i} className={`reveal d${i + 1} flex items-start gap-4 p-6 rounded-xl bg-green-900 text-white shadow-lg`}>
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center text-yellow-400 mt-0.5">
-                  {item.icon}
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">{item.title}</h3>
-                  <p className="text-sm text-white/70">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* PRÉSENTATION */}
       <section className="py-16 sm:py-20">
