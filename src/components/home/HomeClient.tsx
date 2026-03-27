@@ -211,11 +211,11 @@ export function HomeClient({ news, resultats, ticker }: Props) {
       {/* TICKER */}
       {ticker.length > 0 && (
         <div className="bg-green-600 text-white overflow-hidden">
-          <div className="ticker-track flex whitespace-nowrap animate-ticker" style={{ width: "max-content" }}>
-            {Array.from({ length: 10 }, () => ticker).flat().map((item, i) => (
-              <span key={i} className="inline-block px-8 py-1 text-[11px] font-medium tracking-wide leading-normal">
+          <div className="ticker-track flex whitespace-nowrap animate-ticker">
+            {[...ticker, ...ticker].map((item, i) => (
+              <span key={i} className="inline-block px-8 py-1 text-xs font-bold">
                 {item.texte}
-                <span className="ml-6 text-[#f6ca73]">&bull;</span>
+                <span className="mx-4 text-yellow-400">•</span>
               </span>
             ))}
           </div>
@@ -225,12 +225,7 @@ export function HomeClient({ news, resultats, ticker }: Props) {
               100% { transform: translateX(-50%); }
             }
             .animate-ticker {
-              animation: ticker 40s linear infinite;
-            }
-            @media (min-width: 768px) {
-              .animate-ticker {
-                animation: ticker 60s linear infinite;
-              }
+              animation: ticker 30s linear infinite;
             }
           `}</style>
         </div>
