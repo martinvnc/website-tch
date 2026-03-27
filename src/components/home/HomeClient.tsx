@@ -134,6 +134,29 @@ export function HomeClient({ news, resultats, ticker }: Props) {
 
   return (
     <>
+      {/* TICKER */}
+      {ticker.length > 0 && (
+        <div className="bg-green-600 text-white overflow-hidden">
+          <div className="ticker-track flex whitespace-nowrap animate-ticker">
+            {[...ticker, ...ticker].map((item, i) => (
+              <span key={i} className="inline-block px-8 py-1 text-xs font-bold">
+                {item.texte}
+                <span className="mx-4 text-yellow-400">•</span>
+              </span>
+            ))}
+          </div>
+          <style jsx>{`
+            @keyframes ticker {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-ticker {
+              animation: ticker 30s linear infinite;
+            }
+          `}</style>
+        </div>
+      )}
+
       {/* HERO */}
       <section className="relative bg-green-900 text-white overflow-hidden min-h-[calc(100svh-64px)] sm:min-h-0 flex items-center">
         <div className="absolute inset-0">
@@ -207,29 +230,6 @@ export function HomeClient({ news, resultats, ticker }: Props) {
       </section>
 
       <div id="content" />
-
-      {/* TICKER */}
-      {ticker.length > 0 && (
-        <div className="bg-green-600 text-white overflow-hidden">
-          <div className="ticker-track flex whitespace-nowrap animate-ticker">
-            {[...ticker, ...ticker].map((item, i) => (
-              <span key={i} className="inline-block px-8 py-1 text-xs font-bold">
-                {item.texte}
-                <span className="mx-4 text-yellow-400">•</span>
-              </span>
-            ))}
-          </div>
-          <style jsx>{`
-            @keyframes ticker {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-            .animate-ticker {
-              animation: ticker 30s linear infinite;
-            }
-          `}</style>
-        </div>
-      )}
 
       {/* NEWS */}
       {news.length > 0 && (
