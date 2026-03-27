@@ -50,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${quicksand.variable} ${dmSerif.variable}`}>
+    <html lang="fr" className={`${quicksand.variable} ${dmSerif.variable}`} style={{ backgroundColor: "#1a2e1c" }}>
       <head>
         <script
           type="application/ld+json"

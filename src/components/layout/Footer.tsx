@@ -5,7 +5,7 @@ import { MapPin, Mail } from "lucide-react";
 export function Footer() {
   return (
     <footer className="bg-green-900 text-white">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 py-12 lg:py-14">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 py-10 lg:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
           {/* COL 1 — Logo + description */}
           <div className="space-y-4">
@@ -65,7 +65,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/70 hover:text-white transition-colors flex items-center gap-2"
+                    className="text-sm text-white/70 hover:text-[#f6ca73] transition-colors flex items-center gap-2"
                   >
                     <span className="text-white/30">&rsaquo;</span>
                     {link.label}
@@ -97,7 +97,7 @@ export function Footer() {
         </div>
 
         {/* Barre du bas */}
-        <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-8 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-white/50">
             <span>&copy; {new Date().getFullYear()} Tennis Club d&apos;Halluin</span>
             <span className="text-white/20">&bull;</span>

@@ -23,6 +23,11 @@
     --radius: 0.5rem;
   }
 
+  html {
+    background-color: #1a2e1c;
+    overscroll-behavior: none;
+  }
+
   body {
     font-family: var(--font-quicksand), sans-serif;
     background-color: var(--background);

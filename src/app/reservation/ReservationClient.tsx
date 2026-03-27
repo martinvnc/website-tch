@@ -5,6 +5,7 @@ import { useReveal } from "@/hooks/useReveal";
 import { createClient } from "@/lib/supabase/client";
 import { createReservation } from "@/lib/actions/reservation";
 import { ChevronLeft, ChevronRight, Loader2, Lock, X, Search, CheckCircle } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 type Terrain = {
@@ -47,43 +48,46 @@ type Props = {
   creneaux: CreneauSlot[];
 };
 
-function getWeekDates(offset: number): Date[] {
-  const today = new Date();
-  const start = new Date(today);
-  start.setDate(today.getDate() + offset * 7 - today.getDay() + 1);
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    return d;
-  });
-}
-
 function formatDate(d: Date): string {
   return d.toISOString().split("T")[0];
 }
 
-function getSlots(ouverture: string, fermeture: string): string[] {
-  const start = parseInt(ouverture.split(":")[0]);
-  const end = parseInt(fermeture.split(":")[0]);
+function getSlots(terrains: Terrain[]): string[] {
+  // Get the widest range across all terrains
+  let earliest = 23;
+  let latest = 0;
+  for (const t of terrains) {
+    const open = parseInt(t.horaire_ouverture.split(":")[0]);
+    const close = parseInt(t.horaire_fermeture.split(":")[0]);
+    if (open < earliest) earliest = open;
+    if (close > latest) latest = close;
+  }
   const slots: string[] = [];
-  for (let h = start; h < end; h++) {
+  for (let h = earliest; h < latest; h++) {
     slots.push(`${h.toString().padStart(2, "0")}:00`);
   }
   return slots;
 }
 
-const joursFr = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-const moisFr = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+function isTerrainOpenAt(terrain: Terrain, heure: string): boolean {
+  const h = parseInt(heure.split(":")[0]);
+  const open = parseInt(terrain.horaire_ouverture.split(":")[0]);
+  const close = parseInt(terrain.horaire_fermeture.split(":")[0]);
+  return h >= open && h < close;
+}
+
+const joursFrLong = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+const moisFrLong = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
 export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props) {
   useReveal();
-  const [weekOffset, setWeekOffset] = useState(0);
-  const [selectedTerrain, setSelectedTerrain] = useState(terrains[0]?.id ?? "");
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalTerrainId, setModalTerrainId] = useState("");
   const [modalDate, setModalDate] = useState("");
   const [modalHeure, setModalHeure] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
@@ -92,57 +96,66 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
   const [booking, setBooking] = useState(false);
   const [bookingResult, setBookingResult] = useState<{ error?: string; success?: string } | null>(null);
 
-  const dates = getWeekDates(weekOffset);
-  const terrain = terrains.find((t) => t.id === selectedTerrain);
-  const slots = terrain ? getSlots(terrain.horaire_ouverture, terrain.horaire_fermeture) : [];
+  const dateStr = formatDate(selectedDate);
+  const todayStr = formatDate(new Date());
+  const slots = getSlots(terrains);
+
+  // Max +28 days
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + 28);
+
+  const canGoPrev = dateStr > todayStr;
+  const canGoNext = formatDate(selectedDate) < formatDate(maxDate);
+
+  function goDay(dir: number) {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + dir);
+    setSelectedDate(d);
+  }
 
   const fetchReservations = useCallback(async () => {
-    if (!selectedTerrain || dates.length === 0) return;
     setLoading(true);
     const supabase = createClient();
+    const ds = formatDate(selectedDate);
     const { data } = await supabase
       .from("reservations")
       .select("id, terrain_id, user_id, partenaire_user_id, date, heure_debut, heure_fin, statut")
-      .eq("terrain_id", selectedTerrain)
       .eq("statut", "confirmed")
-      .gte("date", formatDate(dates[0]))
-      .lte("date", formatDate(dates[6]));
+      .eq("date", ds);
     setReservations(data ?? []);
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTerrain, weekOffset]);
+  }, [dateStr]);
 
   useEffect(() => {
     fetchReservations();
   }, [fetchReservations]);
 
-  function isSlotBooked(date: string, heure: string): boolean {
-    return reservations.some((r) => r.date === date && r.heure_debut === heure + ":00");
+  function isSlotBooked(terrainId: string, heure: string): boolean {
+    return reservations.some((r) => r.terrain_id === terrainId && r.heure_debut === heure + ":00");
   }
 
-  // Map JS getDay (0=Sun) to our jour_semaine (0=Mon..6=Sun)
-  function getCreneauForSlot(date: Date, heure: string): CreneauSlot | null {
-    const jsDay = date.getDay(); // 0=Sun, 1=Mon...6=Sat
-    const jour = jsDay === 0 ? 6 : jsDay - 1; // Convert to 0=Mon..6=Sun
+  function getCreneauForSlot(terrainId: string, date: Date, heure: string): CreneauSlot | null {
+    const jsDay = date.getDay();
+    const jour = jsDay === 0 ? 6 : jsDay - 1;
     const heureH = parseInt(heure.split(":")[0]);
-    const dateStr = formatDate(date);
+    const ds = formatDate(date);
 
     return creneaux.find(c => {
-      if (c.terrain_id !== selectedTerrain) return false;
+      if (c.terrain_id !== terrainId) return false;
       const cStart = parseInt(c.heure_debut.split(":")[0]);
       const cEnd = parseInt(c.heure_fin.split(":")[0]);
       if (heureH < cStart || heureH >= cEnd) return false;
 
-      // Ponctuel : match sur la date exacte
       if (!c.recurrent && c.date_specifique) {
-        return c.date_specifique === dateStr;
+        return c.date_specifique === ds;
       }
-      // Récurrent : match sur le jour de la semaine
       return c.jour_semaine === jour;
     }) ?? null;
   }
 
-  async function openModal(date: string, heure: string) {
+  async function openModal(terrainId: string, date: string, heure: string) {
+    setModalTerrainId(terrainId);
     setModalDate(date);
     setModalHeure(heure);
     setSelectedPartner(null);
@@ -150,7 +163,6 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
     setSearchQuery("");
     setModalOpen(true);
 
-    // Fetch members for partner selection
     const supabase = createClient();
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     const { data } = await supabase
@@ -166,9 +178,8 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
     setBooking(true);
     setBookingResult(null);
 
-    // Use server action for secure server-side validation (quota, adhesion, conflicts)
     const formData = new FormData();
-    formData.set("terrainId", selectedTerrain);
+    formData.set("terrainId", modalTerrainId);
     formData.set("date", modalDate);
     formData.set("heureDebut", modalHeure);
     formData.set("partenaireId", selectedPartner.id);
@@ -185,19 +196,29 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
   }
 
   const filteredMembers = members.filter(
-    (m) =>
-      `${m.prenom} ${m.nom}`.toLowerCase().includes(searchQuery.toLowerCase())
+    (m) => `${m.prenom} ${m.nom}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const today = formatDate(new Date());
+  const modalTerrain = terrains.find((t) => t.id === modalTerrainId);
+
+  const dateLabel = `${joursFrLong[selectedDate.getDay()]} ${selectedDate.getDate()} ${moisFrLong[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
 
   return (
     <>
       {/* HERO */}
-      <section className="bg-green-900 text-white py-12 sm:py-16">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
-          <h1 className="font-display text-4xl sm:text-5xl">
-            <span className="text-yellow-400">Réservation</span>
+      <section className="relative bg-green-900 text-white py-14 sm:py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/assets/photos/club/hero-indoor-new.jpeg"
+            alt=""
+            fill
+            className="object-cover opacity-30"
+          />
+          <div className="absolute inset-0 bg-green-900/60" />
+        </div>
+        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
+          <h1 className="font-sans font-bold text-4xl sm:text-5xl lg:text-6xl">
+            Réserv<span className="text-[#f6ca73]">ation</span>
           </h1>
           <p className="mt-3 text-white/80">
             Consultez les disponibilités et réservez votre terrain
@@ -206,82 +227,65 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
       </section>
 
       <section className="py-8 sm:py-12">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
-          {/* Terrain selector */}
-          <div className="reveal flex flex-wrap gap-2 mb-6">
-            {terrains.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setSelectedTerrain(t.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
-                  selectedTerrain === t.id
-                    ? "bg-green-600 text-white"
-                    : "bg-white text-green-900 hover:bg-green-600/10"
-                }`}
-              >
-                {t.nom}
-                <span className={`ml-1.5 text-xs ${selectedTerrain === t.id ? "text-white/70" : "text-muted-foreground"}`}>
-                  {t.type === "indoor" ? "Indoor" : "Outdoor"}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Week nav */}
-          <div className="reveal d1 flex items-center justify-between mb-6">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16">
+          {/* Date navigation */}
+          <div className="reveal flex items-center justify-center gap-4 mb-8">
             <button
-              onClick={() => setWeekOffset(weekOffset - 1)}
-              disabled={weekOffset <= 0}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              onClick={() => goDay(-1)}
+              disabled={!canGoPrev}
+              className="p-2.5 rounded-xl hover:bg-gray-100 disabled:opacity-30 transition-colors"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={22} />
             </button>
-            <span className="text-sm font-bold text-green-900">
-              {dates[0].getDate()} {moisFr[dates[0].getMonth()]} — {dates[6].getDate()} {moisFr[dates[6].getMonth()]} {dates[6].getFullYear()}
+            <span className="text-lg font-bold text-green-900 capitalize min-w-[300px] text-center">
+              {dateLabel}
             </span>
             <button
-              onClick={() => setWeekOffset(weekOffset + 1)}
-              disabled={weekOffset >= 3}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              onClick={() => goDay(1)}
+              disabled={!canGoNext}
+              className="p-2.5 rounded-xl hover:bg-gray-100 disabled:opacity-30 transition-colors"
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={22} />
             </button>
           </div>
 
-          {/* Grid */}
-          <div className="reveal d2 overflow-x-auto">
+          {/* Grid — 6 terrains as columns */}
+          <div className="reveal d1 overflow-x-auto">
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="animate-spin text-green-600" size={32} />
               </div>
             ) : (
-              <table className="w-full min-w-[640px] border-collapse">
+              <table className="w-full min-w-[800px] border-collapse">
                 <thead>
                   <tr>
-                    <th className="p-2 text-left text-xs font-bold text-muted-foreground w-16">Heure</th>
-                    {dates.map((d) => {
-                      const isToday = formatDate(d) === today;
-                      return (
-                        <th key={formatDate(d)} className={`p-2 text-center text-xs font-bold ${isToday ? "text-green-600" : "text-muted-foreground"}`}>
-                          <div>{joursFr[d.getDay()]}</div>
-                          <div className={`text-lg ${isToday ? "text-green-600" : "text-green-900"}`}>{d.getDate()}</div>
-                        </th>
-                      );
-                    })}
+                    <th className="p-2 text-left text-xs font-bold text-muted-foreground w-20">Heure</th>
+                    {terrains.map((t) => (
+                      <th key={t.id} className="p-2 text-center">
+                        <div className="text-sm font-bold text-green-900">{t.nom}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                          {t.type === "indoor" ? "Indoor" : "Outdoor"} · {t.surface}
+                        </div>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {slots.map((slot) => (
                     <tr key={slot} className="border-t border-gray-100">
                       <td className="p-2 text-xs font-bold text-muted-foreground">{slot}</td>
-                      {dates.map((d) => {
-                        const dateStr = formatDate(d);
-                        const booked = isSlotBooked(dateStr, slot);
-                        const past = dateStr < today || (dateStr === today && parseInt(slot) <= new Date().getHours());
-                        const creneau = getCreneauForSlot(d, slot);
+                      {terrains.map((t) => {
+                        // Terrain fermé à cette heure
+                        if (!isTerrainOpenAt(t, slot)) {
+                          return <td key={t.id + slot} className="p-1"><div className="h-10 rounded-lg bg-gray-50/50" /></td>;
+                        }
+
+                        const booked = isSlotBooked(t.id, slot);
+                        const past = dateStr < todayStr || (dateStr === todayStr && parseInt(slot) <= new Date().getHours());
+                        const creneau = getCreneauForSlot(t.id, selectedDate, slot);
 
                         return (
-                          <td key={dateStr + slot} className="p-1">
+                          <td key={t.id + slot} className="p-1">
                             {past ? (
                               <div className="h-10 rounded-lg bg-gray-50" />
                             ) : creneau ? (
@@ -303,7 +307,7 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
                             ) : isAuthenticated ? (
                               <button
                                 className="w-full h-10 rounded-lg bg-green-50 hover:bg-green-100 text-xs font-bold text-green-600 transition-colors"
-                                onClick={() => openModal(dateStr, slot)}
+                                onClick={() => openModal(t.id, dateStr, slot)}
                               >
                                 Libre
                               </button>
@@ -326,7 +330,7 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
           </div>
 
           {/* Legend */}
-          <div className="mt-4 flex flex-wrap gap-4 text-xs reveal d3">
+          <div className="mt-4 flex flex-wrap gap-4 text-xs reveal d2">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-green-50 border border-green-200" />
               <span className="text-muted-foreground">Disponible</span>
@@ -337,10 +341,9 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-gray-50 border border-gray-200" />
-              <span className="text-muted-foreground">Passé</span>
+              <span className="text-muted-foreground">Passé / Fermé</span>
             </div>
-            {/* Dynamic créneau type legends */}
-            {Array.from(new Map(creneaux.filter(c => c.terrain_id === selectedTerrain).map(c => [c.type_id, c.creneaux_types])).values()).map((ct, i) => ct && (
+            {Array.from(new Map(creneaux.map(c => [c.type_id, c.creneaux_types])).values()).map((ct, i) => ct && (
               <div key={i} className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: ct.couleur + "33", border: `1px solid ${ct.couleur}55` }} />
                 <span className="text-muted-foreground">{ct.nom}</span>
@@ -367,7 +370,7 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
                 <CheckCircle size={48} className="text-green-600 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-green-900">Réservation confirmée !</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {terrain?.nom} — {new Date(modalDate).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {modalHeure}
+                  {modalTerrain?.nom} — {new Date(modalDate).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {modalHeure}
                 </p>
                 <button
                   onClick={() => setModalOpen(false)}
@@ -380,7 +383,7 @@ export function ReservationClient({ terrains, isAuthenticated, creneaux }: Props
               <>
                 <h3 className="text-lg font-bold text-green-900 mb-1">Réserver un créneau</h3>
                 <p className="text-sm text-muted-foreground mb-5">
-                  {terrain?.nom} — {new Date(modalDate).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {modalHeure}
+                  {modalTerrain?.nom} — {new Date(modalDate).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {modalHeure}
                 </p>
 
                 {bookingResult?.error && (

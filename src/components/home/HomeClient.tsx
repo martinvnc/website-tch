@@ -50,10 +50,10 @@ const categorieBadge: Record<string, { bg: string; text: string }> = {
   club: { bg: "bg-green-800", text: "text-white" },
 };
 
-const resultatStyle: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
-  win: { icon: <Trophy size={16} />, color: "text-green-600", label: "Victoire" },
-  loss: { icon: <X size={16} />, color: "text-red-500", label: "Défaite" },
-  draw: { icon: <Minus size={16} />, color: "text-[#f6ca73]", label: "Nul" },
+const resultatStyle: Record<string, { icon: React.ReactNode; bg: string; text: string; label: string; scoreColor: string }> = {
+  win: { icon: <Trophy size={12} />, bg: "bg-green-500", text: "text-white", label: "Victoire", scoreColor: "text-green-400" },
+  loss: { icon: <X size={12} />, bg: "bg-red-500", text: "text-white", label: "Défaite", scoreColor: "text-red-400" },
+  draw: { icon: <Minus size={12} />, bg: "bg-[#f6ca73]", text: "text-green-900", label: "Nul", scoreColor: "text-[#f6ca73]" },
 };
 
 function ResultatsSection({ resultats }: { resultats: Resultat[] }) {
@@ -69,7 +69,7 @@ function ResultatsSection({ resultats }: { resultats: Resultat[] }) {
           <p className="mt-2 text-sm text-white/60 max-w-md mx-auto">Les performances récentes de nos équipes</p>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {resultats.map((r, i) => {
             const style = resultatStyle[r.resultat] ?? resultatStyle.draw;
             return (
@@ -79,32 +79,36 @@ function ResultatsSection({ resultats }: { resultats: Resultat[] }) {
                 ) : (
                   <div className="absolute inset-0 bg-green-800" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+                <div className="absolute inset-0 bg-black/70" />
                 <div className="relative h-full flex flex-col justify-between p-5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-white/60 uppercase tracking-wider">{r.competition}</span>
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide ${style.color}`}>
+                    <span className="text-[10px] text-white/80 uppercase tracking-wider font-semibold">{r.competition}</span>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${style.bg} ${style.text}`}>
                       {style.icon} {style.label}
                     </span>
                   </div>
                   <div className="flex items-end justify-between">
                     <div>
-                      <p className="font-bold text-white">{r.equipe_tch}</p>
-                      <p className="text-sm text-white/50">{r.equipe_adversaire}</p>
-                      <p className="text-[11px] text-white/30 mt-1">{formatDate(r.date)}</p>
+                      <p className="font-bold text-[#f6ca73]">{r.equipe_tch}</p>
+                      <p className="text-sm text-white/70">{r.equipe_adversaire}</p>
+                      <p className="text-[11px] text-white/50 mt-1">{formatDate(r.date)}</p>
                     </div>
-                    <div className="text-white">
+                    <div>
                       {r.sets && r.sets.length > 0 ? (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           {r.sets.map((s, si) => (
-                            <span key={si} className="text-lg font-bold">{s.tch}-{s.adv}</span>
+                            <span key={si} className="text-2xl sm:text-3xl font-black">
+                              <span className={s.tch >= s.adv ? style.scoreColor : "text-white/40"}>{s.tch}</span>
+                              <span className="text-white/30">-</span>
+                              <span className={s.adv >= s.tch ? style.scoreColor : "text-white/40"}>{s.adv}</span>
+                            </span>
                           ))}
                         </div>
                       ) : (
                         <div className="flex items-center">
-                          <span className="text-3xl sm:text-4xl font-black">{r.score_tch}</span>
-                          <span className="mx-2 text-lg opacity-40">:</span>
-                          <span className="text-3xl sm:text-4xl font-black opacity-40">{r.score_adv}</span>
+                          <span className={`text-3xl sm:text-4xl font-black ${style.scoreColor}`}>{r.score_tch}</span>
+                          <span className="mx-2 text-lg text-white/40">:</span>
+                          <span className="text-3xl sm:text-4xl font-black text-white/50">{r.score_adv}</span>
                         </div>
                       )}
                     </div>
@@ -130,34 +134,6 @@ export function HomeClient({ news, resultats, ticker }: Props) {
 
   return (
     <>
-      {/* TICKER */}
-      {ticker.length > 0 && (
-        <div className="bg-green-600 text-white overflow-hidden">
-          <div className="ticker-track flex whitespace-nowrap animate-ticker" style={{ width: "max-content" }}>
-            {Array.from({ length: 10 }, () => ticker).flat().map((item, i) => (
-              <span key={i} className="inline-block px-8 py-1 text-[11px] font-medium tracking-wide leading-normal">
-                {item.texte}
-                <span className="ml-6 text-[#f6ca73]">&bull;</span>
-              </span>
-            ))}
-          </div>
-          <style jsx>{`
-            @keyframes ticker {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-            .animate-ticker {
-              animation: ticker 40s linear infinite;
-            }
-            @media (min-width: 768px) {
-              .animate-ticker {
-                animation: ticker 60s linear infinite;
-              }
-            }
-          `}</style>
-        </div>
-      )}
-
       {/* HERO */}
       <section className="relative bg-green-900 text-white overflow-hidden min-h-[calc(100svh-64px)] sm:min-h-0 flex items-center">
         <div className="absolute inset-0">
@@ -231,6 +207,35 @@ export function HomeClient({ news, resultats, ticker }: Props) {
       </section>
 
       <div id="content" />
+
+      {/* TICKER */}
+      {ticker.length > 0 && (
+        <div className="bg-green-600 text-white overflow-hidden">
+          <div className="ticker-track flex whitespace-nowrap animate-ticker" style={{ width: "max-content" }}>
+            {Array.from({ length: 10 }, () => ticker).flat().map((item, i) => (
+              <span key={i} className="inline-block px-8 py-1 text-[11px] font-medium tracking-wide leading-normal">
+                {item.texte}
+                <span className="ml-6 text-[#f6ca73]">&bull;</span>
+              </span>
+            ))}
+          </div>
+          <style jsx>{`
+            @keyframes ticker {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-ticker {
+              animation: ticker 40s linear infinite;
+            }
+            @media (min-width: 768px) {
+              .animate-ticker {
+                animation: ticker 60s linear infinite;
+              }
+            }
+          `}</style>
+        </div>
+      )}
+
       {/* NEWS */}
       {news.length > 0 && (
         <section className="pt-12 pb-12 sm:pt-14 sm:pb-14">
@@ -246,49 +251,99 @@ export function HomeClient({ news, resultats, ticker }: Props) {
                 Les derni&egrave;res nouvelles du Tennis Club Halluin
               </p>
             </div>
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {news.slice(0, 4).map((item, i) => {
+            <div className="mt-12 grid grid-cols-1 lg:grid-cols-5 gap-5">
+              {/* FEATURED — première news, grande card à gauche */}
+              {news[0] && (() => {
+                const featured = news[0];
+                const badge = categorieBadge[featured.categorie] ?? categorieBadge.club;
+                const images = featured.image_url ? parseImageUrls(featured.image_url) : [];
+                return (
+                  <Link
+                    key={featured.id}
+                    href="/actualites"
+                    className="reveal d1 group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100 block lg:col-span-3 lg:row-span-2"
+                  >
+                    {images.length > 0 && (
+                      <NewsCarousel images={images} alt={featured.titre} className="h-56 sm:h-64 lg:h-[340px]">
+                        <span
+                          className={`absolute top-4 left-4 px-3 py-1 text-[11px] font-semibold ${badge.bg} ${badge.text} rounded-full capitalize z-10`}
+                        >
+                          {featured.categorie}
+                        </span>
+                      </NewsCarousel>
+                    )}
+                    <div className="p-5 sm:p-6">
+                      <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                        {new Date(featured.date_publication).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                      <h3 className="text-xl sm:text-2xl font-bold text-green-600 leading-snug">
+                        {featured.titre}
+                      </h3>
+                      {featured.texte && (
+                        <div
+                          className="mt-2 text-sm text-muted-foreground line-clamp-3 leading-relaxed prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: featured.texte }}
+                        />
+                      )}
+                      <span className="inline-flex items-center mt-4 text-xs font-bold text-green-900 uppercase tracking-widest group-hover:underline">
+                        {featured.cta_label || "Lire la suite"}&ensp;<ArrowRight size={14} />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })()}
+
+              {/* SECONDARY — 2 petites cards empilées à droite */}
+              {news.slice(1, 3).map((item, i) => {
                 const badge = categorieBadge[item.categorie] ?? categorieBadge.club;
+                const images = item.image_url ? parseImageUrls(item.image_url) : [];
                 return (
                   <Link
                     key={item.id}
                     href="/actualites"
-                    className={`reveal d${Math.min(i + 1, 4)} group bg-white rounded-lg overflow-hidden shadow-sm card-hover border border-gray-100 block`}
+                    className={`reveal d${i + 2} group bg-white rounded-2xl overflow-hidden shadow-sm card-hover border border-gray-100 block lg:col-span-2`}
                   >
-                    {item.image_url && (() => {
-                      const images = parseImageUrls(item.image_url);
-                      return images.length > 0 ? (
-                        <NewsCarousel images={images} alt={item.titre} className="h-40 sm:h-44">
-                          <span
-                            className={`absolute top-3 left-3 px-2.5 py-0.5 text-[10px] font-semibold ${badge.bg} ${badge.text} rounded-full capitalize z-10`}
-                          >
-                            {item.categorie}
-                          </span>
-                        </NewsCarousel>
-                      ) : null;
-                    })()}
+                    {images.length > 0 && (
+                      <div className="relative h-32 sm:h-36 overflow-hidden">
+                        <Image
+                          src={images[0]}
+                          alt={item.titre}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <span
+                          className={`absolute top-3 left-3 px-2.5 py-0.5 text-[10px] font-semibold ${badge.bg} ${badge.text} rounded-full capitalize z-10`}
+                        >
+                          {item.categorie}
+                        </span>
+                      </div>
+                    )}
                     <div className="p-4">
-                      <p className="text-xs text-muted-foreground mb-1">
+                      <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1.5">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                         {new Date(item.date_publication).toLocaleDateString("fr-FR", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
                         })}
                       </p>
-                      <h3 className="text-sm font-bold text-green-900 leading-snug line-clamp-2">
+                      <h3 className="text-sm font-bold text-green-600 leading-snug line-clamp-2">
                         {item.titre}
                       </h3>
                       {item.texte && (
                         <div
-                          className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed prose prose-sm max-w-none"
+                          className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-relaxed prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ __html: item.texte }}
                         />
                       )}
-                      {item.cta_label && item.cta_url && (
-                        <span className="inline-flex items-center mt-3 px-3 py-1.5 rounded-full text-xs font-bold bg-green-600 text-white group-hover:bg-green-800 transition-colors">
-                          {item.cta_label}
-                        </span>
-                      )}
+                      <span className="inline-flex items-center mt-3 text-[11px] font-bold text-green-900 uppercase tracking-widest group-hover:underline">
+                        En savoir plus&ensp;<ArrowRight size={12} />
+                      </span>
                     </div>
                   </Link>
                 );
@@ -322,7 +377,7 @@ export function HomeClient({ news, resultats, ticker }: Props) {
           { src: "/assets/partenaires/atelier-compote.png", alt: "Atelier Compote" },
         ];
         return (
-        <section className="py-12 sm:py-14">
+        <section className="pt-12 pb-6 sm:pt-14 sm:pb-8">
           <div className="text-center mb-8">
             <p className="text-[#f6ca73] font-semibold tracking-widest uppercase text-xs mb-2">
               Ils nous soutiennent

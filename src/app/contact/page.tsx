@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useReveal } from "@/hooks/useReveal";
 import { MapPin, Phone, Mail, Clock, Send, Loader2, CheckCircle } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { submitContactForm } from "@/lib/actions/contact";
 
@@ -43,10 +44,19 @@ export default function ContactPage() {
   return (
     <>
       {/* HERO */}
-      <section className="bg-green-900 text-white py-16 sm:py-20">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
-          <h1 className="font-display text-4xl sm:text-5xl">
-            <span className="text-yellow-400">Contact</span>
+      <section className="relative bg-green-900 text-white py-14 sm:py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/assets/photos/club/hero-indoor-new.jpeg"
+            alt=""
+            fill
+            className="object-cover opacity-30"
+          />
+          <div className="absolute inset-0 bg-green-900/60" />
+        </div>
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 text-center">
+          <h1 className="font-sans font-bold text-4xl sm:text-5xl lg:text-6xl">
+            Con<span className="text-[#f6ca73]">tact</span>
           </h1>
           <p className="mt-3 text-white/80">
             Une question ? Contactez le Tennis Club Halluin
